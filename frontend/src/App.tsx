@@ -1,11 +1,12 @@
 import { Outlet } from "react-router"
+import Header from '@/components/NavBar';
 
 
 function App() {
 
   return (
     <>
-      <h1>Kchaton Cloud App</h1>
+      <Header />
       <Outlet />
     </>
   )

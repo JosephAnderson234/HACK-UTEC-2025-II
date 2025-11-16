@@ -5,6 +5,7 @@ import NotFoundPage from "@/pages/NotFound";
 import { createBrowserRouter } from "react-router";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardPage from "@/pages/Dashboard";
+import RegisterPage from "@/pages/Register";
 
 
 
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
             {
                 path:"login",
                 element:<LoginPage/>
+            },
+            {
+                path:"register",
+                element:<RegisterPage/>
             },
             {
                 path:"", 

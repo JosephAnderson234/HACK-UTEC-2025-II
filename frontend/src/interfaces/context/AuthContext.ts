@@ -1,9 +1,11 @@
 import type { DataStudent, UserResponse } from "../user";
+import { register } from '../../services/auth/index';
 
 export interface AuthContextType {
     token: string | null;
     login:  (credentials: AuthRequest) => Promise<void>;
     logout: () => void;
+    register: (data: AuthRegisterRequest) => Promise<void>;
 }
 
 

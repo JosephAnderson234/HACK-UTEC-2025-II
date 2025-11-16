@@ -6,7 +6,7 @@ export default function BackButton (){
         <button
             aria-label="Volver"
             onClick={() => navigate(-1)}
-            className="fixed top-4 left-4 z-50 inline-flex items-center gap-2 px-3 py-2 rounded-md border border-(--color-secondary) bg-transparent text-(--color-tertiary) shadow-sm hover:bg-(--color-secondary) hover:text-(--color-primary) transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-(--color-secondary)"
+            className="fixed top-24 left-4 z-50 inline-flex items-center gap-2 px-3 py-2 rounded-md border border-(--color-secondary) bg-transparent text-(--color-tertiary) shadow-sm hover:bg-(--color-secondary) hover:text-(--color-primary) transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-(--color-secondary)"
         >
             {/* Icono flecha izquierda */}
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>

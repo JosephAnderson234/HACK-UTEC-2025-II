@@ -1,6 +1,6 @@
 import type { AuthRegisterRequest } from "@/interfaces/context/AuthContext";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import LogoUtec from "@/assets/UTEC-Logo.jpg";
 import useAuth from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -8,10 +8,13 @@ import { useNavigate } from "react-router-dom";
 export default function RegisterForm (){
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthRegisterRequest>();
     const { register: registerUser } = useAuth();
+    const [searchParams] = useSearchParams();
+
     const navigate = useNavigate();
     const onSubmit = async (data: AuthRegisterRequest) => {
         await registerUser(data);
-        navigate('/dashboard');
+         const redirectTo = searchParams.get('from') || '/dashboard';
+        navigate(redirectTo);
     }
     return(
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full max-w-sm">

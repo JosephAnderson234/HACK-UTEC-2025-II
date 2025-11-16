@@ -9,18 +9,20 @@ const linksByRole: Record<Role, { name: string; href: string }[]> = {
     admin: [
         { name: 'Dashboard', href: '/dashboard' },
         { name: 'Manage Users', href: '/admin/users' },
-        { name: 'Reportes', href: '/report' }
+        { name: 'All reports', href: '/report' },
+        { name: 'Nuevo Reporte', href: '/report/new' },
     ],
     authority: [
         { name: 'Dashboard', href: '/dashboard' },
-        { name: 'Mis Reportes', href: '/authority/reports' },
+        { name: 'Mis Reportes', href: '/my-report/' },
         { name: 'Nuevo Reporte', href: '/report/new' },
-        { name: 'Reportes', href: '/report' }
+        { name: 'All reports', href: '/report' }
     ],
     student: [
         { name: 'Dashboard', href: '/dashboard' },
         { name: 'Nuevo Reporte', href: '/report/new' },
-        { name: 'Mis Reportes', href: '/report' }
+        { name: 'Reportes', href: '/report' },
+        { name: 'Mis Reportes', href: '/my-report/' }
     ]
 };
 

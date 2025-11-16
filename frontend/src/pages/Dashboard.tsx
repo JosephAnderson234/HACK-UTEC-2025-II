@@ -1,3 +1,5 @@
+import AdminDashboard from "@/components/sections/AdminDashboard";
+import AutorityDashbaord from "@/components/sections/AutorityDashbaord";
 import StudentDashboard from "@/components/sections/StudentDashboard";
 import useAuth from "@/hooks/useAuth"
 import type { Role } from "@/interfaces/user";
@@ -23,8 +25,8 @@ export default function DashboardPage () {
 
     const DasboardsByRole: Record<Role, JSX.Element> = {
         student: <StudentDashboard />,
-        authority: <div>Teacher Dashboard Section</div>,
-        admin: <div>Admin Dashboard Section</div>,
+        authority: <AutorityDashbaord />,
+        admin: <AdminDashboard/>,
     }
 
     return(

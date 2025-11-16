@@ -23,6 +23,10 @@ functions:
   sendReport:
     handler: functions.sendReport.handler
     events:
+    - http:
+        path: send-report
+        method: post
+        cors: true
     - eventBridge:
         pattern:
           source:

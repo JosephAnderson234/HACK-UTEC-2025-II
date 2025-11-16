@@ -4,6 +4,7 @@ from datetime import datetime
 
 dynamodb = boto3.resource('dynamodb')
 s3 = boto3.client('s3')
+events = boto3.client('events')
 
 def handler(event, context):
     # Lógica para enviar reporte
@@ -18,7 +19,20 @@ def handler(event, context):
     if 'image' in report_data:
         s3.put_object(Bucket='s3-img', Key=f'report-{report_id}.jpg', Body=report_data['image'])
     
+    # Lanzar evento EventBridge para notificación WebSocket
+    events.put_events(
+        Entries=[
+            {
+                'Source': 'aws.events',
+                'DetailType': 'New Report Notification',
+                'Detail': json.dumps({
+                    'message': f'Nuevo reporte creado: {report_data.get("description", "Sin descripción")}'
+                })
+            }
+        ]
+    )
+    
     return {
         'statusCode': 200,
-        'body': json.dumps({'message': 'Report sent'})
+        'body': json.dumps({'message': 'Report sent', 'reportId': report_id})
     }

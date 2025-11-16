@@ -18,7 +18,7 @@ export const getPlaces = async (params?: GetPlacesParams) => {
     if (params?.type) queryParams.append('type', params.type);
     if (params?.term) queryParams.append('term', params.term);
 
-    const url = queryParams.toString() ? `${PLACES_URL}?${queryParams.toString()}` : PLACES_URL;
+    const url = queryParams.toString() ? `${PLACES_URL}/places?${queryParams.toString()}` : `${PLACES_URL}/places`;
 
     const response = await fetch(url, {
         method: 'GET',

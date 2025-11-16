@@ -21,6 +21,7 @@ export interface GetReportsQuery {
     urgencia?: string;
     orderBy?: string;
     order?: "asc" | "desc";
+    assigned_sector?: string;
 }
 
 /**
@@ -48,6 +49,13 @@ export const getReports = async (
         query = params;
     }
 
+
+    const user = useToken.getState().user;
+    const role = user?.role;
+    if (!role){
+        throw new Error("User role is undefined");
+    }
+
     const url = new URL(`${API_URL}`);
 
     const append = (key: string, value?: string | number) => {
@@ -65,6 +73,10 @@ export const getReports = async (
     append("orderBy", query.orderBy);
     append("order", query.order);
 
+    if (role === "authority"){
+        append("assigned_sector", user.data_authority?.sector);
+    }
+
     const token = useToken.getState().token;
 
     const res = await fetch(url.toString(), {
@@ -74,6 +86,8 @@ export const getReports = async (
             "Content-Type": "application/json",
         },
     });
+
+
 
     if (!res.ok) throw new Error("Error fetching reports");
     const data = await res.json();

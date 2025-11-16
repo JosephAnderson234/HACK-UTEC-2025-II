@@ -37,10 +37,10 @@ export default function AllReportsPage (){
     useEffect(() => {
         let isActive = true;
         const seq = ++requestSeqRef.current;
-
+        
         const fetchReports = async () => {
             try {
-                const data = await getReports(debouncedTerm, page, size);
+                const data = await getReports({term:debouncedTerm, page, size});
                 // ignora respuestas antiguas o efecto desmontado
                 if (!isActive || seq !== requestSeqRef.current) return;
                 setCurrentData(data);

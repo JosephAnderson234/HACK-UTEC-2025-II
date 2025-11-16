@@ -9,6 +9,7 @@ import RegisterPage from "@/pages/Register";
 import ReportPage from "@/pages/ReportPage";
 import CreateReportPage from "@/pages/CreateReportPage";
 import AllReportsPage from "@/pages/AllReports";
+import MyReportsPage from "@/pages/MyReports";
 
 
 
@@ -39,16 +40,20 @@ const router = createBrowserRouter([
                         element: <DashboardPage/>
                     },
                     {
+                        path:"my-report",
+                        element: <MyReportsPage/>
+                    },
+                    {
                         path:"report",
                         element: <AllReportsPage/>
                     },
                     {
-                        path:"report/:id",
-                        element: <ReportPage/>
-                    },
-                    {
                         path:"report/new",
                         element: <CreateReportPage/>
+                    },
+                    {
+                        path:"report/:id",
+                        element: <ReportPage/>
                     }
                 ]
             },

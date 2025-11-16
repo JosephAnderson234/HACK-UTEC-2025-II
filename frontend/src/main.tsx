@@ -4,11 +4,14 @@ import '@/styles/index.css'
 import AuthContextProvider from './context/AuthProvider.tsx'
 import router from './router/routes.tsx'
 import { RouterProvider } from 'react-router'
+import { NotificationProvider } from './context/NotificationProvider';
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<AuthContextProvider>
-			<RouterProvider router={router}/>
+			<NotificationProvider>
+				<RouterProvider router={router} />
+			</NotificationProvider>
 		</AuthContextProvider>
 	</StrictMode>,
 )

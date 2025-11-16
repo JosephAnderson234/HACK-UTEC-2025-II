@@ -1,0 +1,28 @@
+Resources:
+  ReportsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Reports
+      AttributeDefinitions:
+      - AttributeName: reportId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: reportId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  WSConnections:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: WSConnections
+      AttributeDefinitions:
+      - AttributeName: connectionId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: connectionId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5

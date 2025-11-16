@@ -1,0 +1,507 @@
+{
+  "/home/leonardo/Cursos/Cloud/hackaton/HACK-UTEC-2025-II/backend/serverless.yml": {
+    "versionFramework": "4.23.0",
+    "servicePath": "/home/leonardo/Cursos/Cloud/hackaton/HACK-UTEC-2025-II/backend/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "org": "leonardogst",
+      "service": "utec-alerta",
+      "provider": {
+        "name": "aws",
+        "runtime": "python3.12",
+        "region": "us-east-1",
+        "iam": {
+          "role": "arn:aws:iam::292984540358:role/LabRole"
+        },
+        "environment": {
+          "BUCKET_INGESTA": "utec-alerta-dev-bucket-of-hack-utec",
+          "JWT_SECRET_PARAM": "<REDACTED>",
+          "WEBSOCKET_API_ENDPOINT": {
+            "Fn::Sub": "${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com"
+          }
+        },
+        "stage": "dev",
+        "versionFunctions": true,
+        "remoteFunctionData": {
+          "Configuration": {
+            "FunctionName": "utec-alerta-dev-login",
+            "FunctionArn": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-login",
+            "Runtime": "python3.12",
+            "Role": "arn:aws:iam::292984540358:role/LabRole",
+            "Handler": "functions.auth.handler",
+            "CodeSize": 135287,
+            "Description": "",
+            "Timeout": 6,
+            "MemorySize": 1024,
+            "LastModified": "2025-11-16T07:52:12.000+0000",
+            "CodeSha256": "T/AUc5QhB1UXJPJn+6DdiuwBkX6WC4KXdC4biLy/N/8=",
+            "Version": "$LATEST",
+            "Environment": {
+              "Variables": {
+                "JWT_SECRET_PARAM": "<REDACTED>",
+                "WEBSOCKET_API_ENDPOINT": "719lv0i4n7.execute-api.us-east-1.amazonaws.com",
+                "BUCKET_INGESTA": "utec-alerta-dev-bucket-of-hack-utec"
+              }
+            },
+            "KMSKeyArn": null,
+            "TracingConfig": {
+              "Mode": "PassThrough"
+            },
+            "MasterArn": null,
+            "RevisionId": "05b1395c-67a1-444e-9b19-d8e6a02d8e25",
+            "State": "Active",
+            "StateReason": null,
+            "StateReasonCode": null,
+            "LastUpdateStatus": "Successful",
+            "LastUpdateStatusReason": null,
+            "LastUpdateStatusReasonCode": null,
+            "PackageType": "Zip",
+            "SigningProfileVersionArn": null,
+            "SigningJobArn": null,
+            "Architectures": [
+              "x86_64"
+            ],
+            "EphemeralStorage": {
+              "Size": 512
+            },
+            "SnapStart": {
+              "ApplyOn": "None",
+              "OptimizationStatus": "Off"
+            },
+            "RuntimeVersionConfig": {
+              "RuntimeVersionArn": "arn:aws:lambda:us-east-1::runtime:c010741a32d362a2a9a445adf0a7418ce4fac7ec907bcf1371249e79b7ece18a"
+            },
+            "LoggingConfig": {
+              "LogFormat": "Text",
+              "ApplicationLogLevel": null,
+              "SystemLogLevel": null,
+              "LogGroup": "/aws/lambda/utec-alerta-dev-login"
+            },
+            "Layers": []
+          },
+          "Code": {
+            "RepositoryType": "S3",
+            "Location": "https://prod-iad-c1-djusa-tasks.s3.us-east-1.amazonaws.com/snapshots/292984540358/utec-alerta-dev-login-e5fedf16-d8bc-4ab0-b886-403a96c387c6?versionId=m05EBYvvkH.P1we8vKFs8vsifhrAgYs9&X-Amz-Security-Token=IQoJb3JpZ2luX2VjELz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCIQDIve0OF%2Fj4t536BmHWf6IUWYVC%2FmyF5qcfGqEN0lgYLQIgJKTGIYFQ7iZO52yvKkRf4ht6snON0xM%2FXMW2Uub26XUqlAIIhf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAEGgw0NzkyMzMwMjUzNzkiDHqZBhfT9w4TIRk1fyroAS7F6UzbDukDWCFYAq37ZEoUse79OIQxwz0sVO%2FIypCoYTfo8%2BwIt43hoDfp9J%2B3U8r1Ncpi3LHfdLCpC2bqy35bKh5NN5eQX25s%2FyI06SyMnFvQ6o5lnOB6c0Jqxp4qjtg0A3NIssJakfNXBakesCLOuYJ1YPgQ5T3tdc4AVgf2RpY007Y4zYGJJoYITKVFnRT6KvDGngpv3VsAacvlvRS%2F%2BudRj2mCaGB8Lf6XFMwP5GWYTBLXyt7FBDwcrULvC%2F6YziUOynDidLwfLYlguYQn0y%2FyWqbr4rahCSpKohnJV8fM1YmKoGswmLnjyAY6jQGlpQz14fNcYy2jA6CHoukKyIh9XzkOBNqX73boQQ%2FarcVMUrLmBV7eljAtFeH9CmUfroL8%2Bme%2B3Mk0%2B4z81bOPXegkxC4NCbjAwspcLfEXUjXug7c11Hbq4VGR%2Bfn5NPhRb8ASJIvK4sVMhbNGElG0iqQjcZbOL2sVPwEqLwYtsCKMN0F%2FmIY0SBjU70o%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20251116T075322Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Credential=ASIAW7FEDUVR3IRYA4NU%2F20251116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=4171f1d43911a4e214f1ee5c25c6abf403038a9e93eea97a5d8fec94ad46aff3",
+            "ImageUri": null,
+            "ResolvedImageUri": null
+          },
+          "Tags": {
+            "aws:cloudformation:stack-name": "utec-alerta-dev",
+            "aws:cloudformation:stack-id": "arn:aws:cloudformation:us-east-1:292984540358:stack/utec-alerta-dev/fe2b9810-c2be-11f0-b86a-1246aa419a05",
+            "STAGE": "dev",
+            "aws:cloudformation:logical-id": "LoginLambdaFunction"
+          }
+        }
+      },
+      "package": {
+        "patterns": [
+          "!node_modules/**",
+          "!.serverless/**",
+          "!.git/**",
+          "!scripts/**",
+          "!*.md",
+          "functions/**",
+          "utils/**",
+          "jwt/**",
+          "PyJWT-*.dist-info/**"
+        ],
+        "artifactsS3KeyDirname": "serverless/utec-alerta/dev/code-artifacts"
+      },
+      "functions": {
+        "register": {
+          "handler": "functions.auth.handler",
+          "events": [
+            {
+              "http": {
+                "path": "auth/register",
+                "method": "post",
+                "cors": true
+              }
+            }
+          ],
+          "name": "utec-alerta-dev-register"
+        },
+        "login": {
+          "handler": "functions.auth.handler",
+          "events": [
+            {
+              "http": {
+                "path": "auth/login",
+                "method": "post",
+                "cors": true
+              }
+            }
+          ],
+          "name": "utec-alerta-dev-login"
+        },
+        "sendReport": {
+          "handler": "functions.sendReport.handler",
+          "events": [
+            {
+              "http": {
+                "path": "reports/create",
+                "method": "post",
+                "cors": true
+              }
+            }
+          ],
+          "name": "utec-alerta-dev-sendReport"
+        },
+        "updateStatus": {
+          "handler": "functions.updateStatus.handler",
+          "events": [
+            {
+              "http": {
+                "path": "reports/update-status",
+                "method": "post",
+                "cors": true
+              }
+            }
+          ],
+          "name": "utec-alerta-dev-updateStatus"
+        },
+        "onConnect": {
+          "handler": "functions.onConnect.handler",
+          "events": [
+            {
+              "websocket": {
+                "route": "$connect"
+              }
+            }
+          ],
+          "name": "utec-alerta-dev-onConnect"
+        },
+        "onDisconnect": {
+          "handler": "functions.onDisconnect.handler",
+          "events": [
+            {
+              "websocket": {
+                "route": "$disconnect"
+              }
+            }
+          ],
+          "name": "utec-alerta-dev-onDisconnect"
+        },
+        "sendNotify": {
+          "handler": "functions.sendNotify.handler",
+          "events": [
+            {
+              "eventBridge": {
+                "pattern": {
+                  "source": [
+                    "utec-alerta.reports"
+                  ],
+                  "detail-type": [
+                    "ReportCreated",
+                    "StatusUpdated"
+                  ]
+                }
+              }
+            }
+          ],
+          "name": "utec-alerta-dev-sendNotify"
+        }
+      },
+      "resources": {
+        "Resources": {
+          "ReportsTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "t_reportes",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "id_reporte",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "id_reporte",
+                  "KeyType": "HASH"
+                }
+              ],
+              "ProvisionedThroughput": {
+                "ReadCapacityUnits": 5,
+                "WriteCapacityUnits": 5
+              }
+            }
+          },
+          "WSConnections": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "t_connections",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "connectionId",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "connectionId",
+                  "KeyType": "HASH"
+                }
+              ],
+              "ProvisionedThroughput": {
+                "ReadCapacityUnits": 5,
+                "WriteCapacityUnits": 5
+              }
+            }
+          },
+          "TUsuarios": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "t_usuarios",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "email",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "GlobalSecondaryIndexes": [
+                {
+                  "IndexName": "EmailIndex",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "email",
+                      "KeyType": "HASH"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  },
+                  "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                  }
+                }
+              ],
+              "ProvisionedThroughput": {
+                "ReadCapacityUnits": 5,
+                "WriteCapacityUnits": 5
+              }
+            }
+          },
+          "TLugares": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "t_lugares",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "ProvisionedThroughput": {
+                "ReadCapacityUnits": 5,
+                "WriteCapacityUnits": 5
+              }
+            }
+          },
+          "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketName": "utec-alerta-dev-bucket-of-hack-utec",
+              "AccessControl": "Private"
+            }
+          },
+          "JWTSecretParameter": "<REDACTED>"
+        }
+      },
+      "custom": {
+        "stage": "dev"
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "python3.12",
+      "region": "us-east-1",
+      "iam": {
+        "role": "arn:aws:iam::292984540358:role/LabRole"
+      },
+      "environment": {
+        "BUCKET_INGESTA": "utec-alerta-dev-bucket-of-hack-utec",
+        "JWT_SECRET_PARAM": "<REDACTED>",
+        "WEBSOCKET_API_ENDPOINT": {
+          "Fn::Sub": "${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com"
+        }
+      },
+      "stage": "dev",
+      "versionFunctions": true,
+      "remoteFunctionData": {
+        "Configuration": {
+          "FunctionName": "utec-alerta-dev-login",
+          "FunctionArn": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-login",
+          "Runtime": "python3.12",
+          "Role": "arn:aws:iam::292984540358:role/LabRole",
+          "Handler": "functions.auth.handler",
+          "CodeSize": 135287,
+          "Description": "",
+          "Timeout": 6,
+          "MemorySize": 1024,
+          "LastModified": "2025-11-16T07:52:12.000+0000",
+          "CodeSha256": "T/AUc5QhB1UXJPJn+6DdiuwBkX6WC4KXdC4biLy/N/8=",
+          "Version": "$LATEST",
+          "Environment": {
+            "Variables": {
+              "JWT_SECRET_PARAM": "<REDACTED>",
+              "WEBSOCKET_API_ENDPOINT": "719lv0i4n7.execute-api.us-east-1.amazonaws.com",
+              "BUCKET_INGESTA": "utec-alerta-dev-bucket-of-hack-utec"
+            }
+          },
+          "KMSKeyArn": null,
+          "TracingConfig": {
+            "Mode": "PassThrough"
+          },
+          "MasterArn": null,
+          "RevisionId": "05b1395c-67a1-444e-9b19-d8e6a02d8e25",
+          "State": "Active",
+          "StateReason": null,
+          "StateReasonCode": null,
+          "LastUpdateStatus": "Successful",
+          "LastUpdateStatusReason": null,
+          "LastUpdateStatusReasonCode": null,
+          "PackageType": "Zip",
+          "SigningProfileVersionArn": null,
+          "SigningJobArn": null,
+          "Architectures": [
+            "x86_64"
+          ],
+          "EphemeralStorage": {
+            "Size": 512
+          },
+          "SnapStart": {
+            "ApplyOn": "None",
+            "OptimizationStatus": "Off"
+          },
+          "RuntimeVersionConfig": {
+            "RuntimeVersionArn": "arn:aws:lambda:us-east-1::runtime:c010741a32d362a2a9a445adf0a7418ce4fac7ec907bcf1371249e79b7ece18a"
+          },
+          "LoggingConfig": {
+            "LogFormat": "Text",
+            "ApplicationLogLevel": null,
+            "SystemLogLevel": null,
+            "LogGroup": "/aws/lambda/utec-alerta-dev-login"
+          },
+          "Layers": []
+        },
+        "Code": {
+          "RepositoryType": "S3",
+          "Location": "https://prod-iad-c1-djusa-tasks.s3.us-east-1.amazonaws.com/snapshots/292984540358/utec-alerta-dev-login-e5fedf16-d8bc-4ab0-b886-403a96c387c6?versionId=m05EBYvvkH.P1we8vKFs8vsifhrAgYs9&X-Amz-Security-Token=IQoJb3JpZ2luX2VjELz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCIQDIve0OF%2Fj4t536BmHWf6IUWYVC%2FmyF5qcfGqEN0lgYLQIgJKTGIYFQ7iZO52yvKkRf4ht6snON0xM%2FXMW2Uub26XUqlAIIhf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAEGgw0NzkyMzMwMjUzNzkiDHqZBhfT9w4TIRk1fyroAS7F6UzbDukDWCFYAq37ZEoUse79OIQxwz0sVO%2FIypCoYTfo8%2BwIt43hoDfp9J%2B3U8r1Ncpi3LHfdLCpC2bqy35bKh5NN5eQX25s%2FyI06SyMnFvQ6o5lnOB6c0Jqxp4qjtg0A3NIssJakfNXBakesCLOuYJ1YPgQ5T3tdc4AVgf2RpY007Y4zYGJJoYITKVFnRT6KvDGngpv3VsAacvlvRS%2F%2BudRj2mCaGB8Lf6XFMwP5GWYTBLXyt7FBDwcrULvC%2F6YziUOynDidLwfLYlguYQn0y%2FyWqbr4rahCSpKohnJV8fM1YmKoGswmLnjyAY6jQGlpQz14fNcYy2jA6CHoukKyIh9XzkOBNqX73boQQ%2FarcVMUrLmBV7eljAtFeH9CmUfroL8%2Bme%2B3Mk0%2B4z81bOPXegkxC4NCbjAwspcLfEXUjXug7c11Hbq4VGR%2Bfn5NPhRb8ASJIvK4sVMhbNGElG0iqQjcZbOL2sVPwEqLwYtsCKMN0F%2FmIY0SBjU70o%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20251116T075322Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Credential=ASIAW7FEDUVR3IRYA4NU%2F20251116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=4171f1d43911a4e214f1ee5c25c6abf403038a9e93eea97a5d8fec94ad46aff3",
+          "ImageUri": null,
+          "ResolvedImageUri": null
+        },
+        "Tags": {
+          "aws:cloudformation:stack-name": "utec-alerta-dev",
+          "aws:cloudformation:stack-id": "arn:aws:cloudformation:us-east-1:292984540358:stack/utec-alerta-dev/fe2b9810-c2be-11f0-b86a-1246aa419a05",
+          "STAGE": "dev",
+          "aws:cloudformation:logical-id": "LoginLambdaFunction"
+        }
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "org: leonardogst\nservice: utec-alerta\n\nprovider:\n  name: aws\n  runtime: python3.12\n  region: us-east-1\n  iam:\n    role: arn:aws:iam::292984540358:role/LabRole\n  environment:\n    BUCKET_INGESTA: ${self:service}-${sls:stage}-bucket-of-hack-utec\n    JWT_SECRET_PARAM: /utec-alerta/jwt-secret\n    WEBSOCKET_API_ENDPOINT: !Sub '${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com'\n\npackage:\n  patterns:\n    - '!node_modules/**'\n    - '!.serverless/**'\n    - '!.git/**'\n    - '!scripts/**'\n    - '!*.md'\n    - 'functions/**'\n    - 'utils/**'\n    - 'jwt/**'\n    - 'PyJWT-*.dist-info/**'\n\nfunctions:\n  # Autenticación\n  register:\n    handler: functions.auth.handler\n    events:\n    - http:\n        path: auth/register\n        method: post\n        cors: true\n  \n  login:\n    handler: functions.auth.handler\n    events:\n    - http:\n        path: auth/login\n        method: post\n        cors: true\n\n  # Gestión de reportes\n  sendReport:\n    handler: functions.sendReport.handler\n    events:\n    - http:\n        path: reports/create\n        method: post\n        cors: true\n  \n  updateStatus:\n    handler: functions.updateStatus.handler\n    events:\n    - http:\n        path: reports/update-status\n        method: post\n        cors: true\n\n  # WebSocket\n  onConnect:\n    handler: functions.onConnect.handler\n    events:\n    - websocket:\n        route: $connect\n  \n  onDisconnect:\n    handler: functions.onDisconnect.handler\n    events:\n    - websocket:\n        route: $disconnect\n  \n  # Notificaciones\n  sendNotify:\n    handler: functions.sendNotify.handler\n    events:\n    - eventBridge:\n        pattern:\n          source:\n          - utec-alerta.reports\n          detail-type:\n          - ReportCreated\n          - StatusUpdated\n\nresources:\n- ${file(./resources/dynamodb-tables.yml)}\n- ${file(./resources/s3.yml)}\n- ${file(./resources/parameter-store.yml)}\n\ncustom:\n  stage: ${sls:stage}\n",
+    "command": [
+      "deploy",
+      "function"
+    ],
+    "options": {
+      "function": "login"
+    },
+    "orgId": "b096ee3f-78c3-453f-9e47-7c055707697c",
+    "orgName": "leonardogst",
+    "userId": "JNhrCFpBbVTPHqmdVn",
+    "userName": "leonardogst",
+    "serviceProviderAwsAccountId": "292984540358",
+    "serviceProviderAwsCfStackName": "utec-alerta-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:292984540358:stack/utec-alerta-dev/fe2b9810-c2be-11f0-b86a-1246aa419a05",
+    "serviceProviderAwsCfStackCreated": "2025-11-16T07:36:41.407Z",
+    "serviceProviderAwsCfStackUpdated": "2025-11-16T07:52:06.263Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "UpdateStatusLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-updateStatus:6",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-utec-alerta-dev-UpdateStatusLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "SendNotifyLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-sendNotify:6",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-utec-alerta-dev-SendNotifyLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "RegisterLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-register:3",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-utec-alerta-dev-RegisterLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "OnConnectLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-onConnect:6",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-utec-alerta-dev-OnConnectLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "OnDisconnectLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-onDisconnect:6",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-utec-alerta-dev-OnDisconnectLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "SendReportLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-sendReport:6",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-utec-alerta-dev-SendReportLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "LoginLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:292984540358:function:utec-alerta-dev-login:3",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-utec-alerta-dev-LoginLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServiceEndpoint",
+        "OutputValue": "https://swcodvkor6.execute-api.us-east-1.amazonaws.com/dev",
+        "Description": "URL of the service endpoint",
+        "ExportName": "sls-utec-alerta-dev-ServiceEndpoint"
+      },
+      {
+        "OutputKey": "ServiceEndpointWebsocket",
+        "OutputValue": "wss://719lv0i4n7.execute-api.us-east-1.amazonaws.com/dev",
+        "Description": "URL of the service endpoint",
+        "ExportName": "sls-utec-alerta-dev-ServiceEndpointWebsocket"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-us-east-1-d8f8ee3e-4aa9",
+        "ExportName": "sls-utec-alerta-dev-ServerlessDeploymentBucketName"
+      }
+    ]
+  }
+}

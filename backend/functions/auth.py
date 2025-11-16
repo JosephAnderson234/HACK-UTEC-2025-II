@@ -13,6 +13,21 @@ ssm = boto3.client('ssm')
 # Cache para JWT_SECRET
 _jwt_secret_cache = None
 
+# Helper para convertir Decimal a tipos nativos de Python
+def decimal_to_native(obj):
+    """Convierte Decimal a int o float según corresponda"""
+    if isinstance(obj, list):
+        return [decimal_to_native(i) for i in obj]
+    elif isinstance(obj, dict):
+        return {k: decimal_to_native(v) for k, v in obj.items()}
+    elif isinstance(obj, Decimal):
+        if obj % 1 == 0:
+            return int(obj)
+        else:
+            return float(obj)
+    else:
+        return obj
+
 def get_jwt_secret():
     """Obtiene el JWT_SECRET desde Parameter Store con caché"""
     global _jwt_secret_cache
@@ -176,6 +191,9 @@ def handle_login(body):
             return create_response(401, {'error': 'Invalid credentials'})
         
         user = response['Items'][0]
+        
+        # Convertir Decimal a tipos nativos
+        user = decimal_to_native(user)
         
         # Verificar contraseña
         password_hash = hash_password(body['password'])

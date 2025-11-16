@@ -1,4 +1,4 @@
-org: hackutec
+org: leonardogst
 service: utec-alerta
 
 provider:
@@ -6,11 +6,23 @@ provider:
   runtime: python3.12
   region: us-east-1
   iam:
-    role: arn:aws:iam::538821665497:role/LabRole
+    role: arn:aws:iam::292984540358:role/LabRole
   environment:
     BUCKET_INGESTA: ${self:service}-${sls:stage}-bucket-of-hack-utec
     JWT_SECRET_PARAM: /utec-alerta/jwt-secret
     WEBSOCKET_API_ENDPOINT: !Sub '${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com'
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!.serverless/**'
+    - '!.git/**'
+    - '!scripts/**'
+    - '!*.md'
+    - 'functions/**'
+    - 'utils/**'
+    - 'jwt/**'
+    - 'PyJWT-*.dist-info/**'
 
 functions:
   # Autenticación
@@ -76,9 +88,6 @@ resources:
 - ${file(./resources/dynamodb-tables.yml)}
 - ${file(./resources/s3.yml)}
 - ${file(./resources/parameter-store.yml)}
-
-plugins:
-- serverless-offline
 
 custom:
   stage: ${sls:stage}

@@ -1,6 +1,17 @@
 import { Link } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
+import { useEffect } from "react";
 export default function HomePage(){
+    const navigate = useNavigate();
+    const { token } = useAuth();
+    
+    useEffect(() => {
+        if (token) {
+            navigate('/dashboard');
+        }
+    }, [token, navigate]);
+    
     return(
     <main className="min-h-screen flex items-center justify-center bg-(--color-primary)">
             <section className="max-w-3xl w-full p-8">

@@ -2,7 +2,7 @@ import type { DataStudent, UserResponse } from "../user";
 
 export interface AuthContextType {
     token: string | null;
-    login: (credentials: AuthRequest) => Promise<void>;
+    login:  (credentials: AuthRequest) => Promise<void>;
     logout: () => void;
 }
 

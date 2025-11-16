@@ -10,7 +10,7 @@ export default function LoginForm() {
     const navigate = useNavigate();
     const { login } = useAuth();
     const onSubmit = async (data: AuthRegisterRequest) => {
-        login(data);
+        await login(data);
         navigate('/dashboard');
     }
 

@@ -151,6 +151,17 @@ def handler(event, context):
             'report': {
                 'id_reporte': report_id,
                 'estado': new_status,
+                'urgencia': report.get('urgencia'),
+                'urgencia_clasificada': report.get('urgencia_clasificada'),
+                'clasificacion_auto': report.get('clasificacion_auto', False),
+                'classification_score': report.get('classification_score'),
+                'updated_at': timestamp,
+                'assigned_to': user_id
+            }
+        })
+            'report': {
+                'id_reporte': report_id,
+                'estado': new_status,
                 'updated_at': timestamp,
                 'assigned_to': user_id
             }

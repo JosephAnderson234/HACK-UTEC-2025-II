@@ -90,7 +90,7 @@ def handler(event, context):
             user_response = table_usuarios.get_item(Key={'id': user_id})
             if 'Item' in user_response:
                 user_data = user_response['Item']
-                user_sector = user_data.get('data_authority', {}).get('sector', '')
+                user_sector =    user_data.get('data_authority', {}).get('sector', '')
                 
                 # Filtrar solo usuarios del mismo sector (otros authority/admin del mismo sector)
                 items = [

@@ -21,7 +21,7 @@ users_table = dynamodb.Table('t_usuarios')
 def handler(event, context):
     """
     GET /reports
-    Query params: ?page=1&size=20&estado=*&urgencia=*&sector=*&tower=*&floor=*&term=fuga&orderBy=urgencia&order=desc
+    Query params: ?page=1&size=20&estado=PENDIENTE&urgencia=ALTA&orderBy=created_at&order=desc
     """
     try:
         # 1. Extraer y validar token
@@ -42,8 +42,7 @@ def handler(event, context):
         # 4. Extraer parámetros de query
         query_params = event.get('queryStringParameters') or {}
         page, size = extract_pagination_params(query_params)
-        order_by, order = extract_sort_params(query_params, default_order_by='urgencia')
-        term = query_params.get('term', '').strip()
+        order_by, order = extract_sort_params(query_params, default_order_by='created_at')
         
         # 5. Obtener todos los reportes
         response = reports_table.scan()
@@ -59,26 +58,13 @@ def handler(event, context):
         # 6. Sin filtrado automático por rol (transparencia total)
         # Todos los usuarios pueden ver todos los reportes
         
-        # 7. Aplicar filtros opcionales
-        filters = extract_filter_params(query_params, ['estado', 'urgencia', 'assigned_sector', 'tower', 'floor'])
+        # 7. Aplicar filtros opcionales (solo estado y urgencia)
+        filters = extract_filter_params(query_params, ['estado', 'urgencia'])
         if filters:
-            # Filtrar por campos directos
             if 'estado' in filters:
                 reports = [r for r in reports if r.get('estado') == filters['estado']]
             if 'urgencia' in filters:
                 reports = [r for r in reports if r.get('urgencia') == filters['urgencia']]
-            if 'assigned_sector' in filters and role == 'admin':  # Solo admin puede filtrar por sector arbitrario
-                reports = [r for r in reports if r.get('assigned_sector') == filters['assigned_sector']]
-            
-            # Filtrar por atributos del lugar (nested)
-            if 'tower' in filters:
-                reports = [r for r in reports if r.get('lugar', {}).get('tower') == filters['tower']]
-            if 'floor' in filters:
-                reports = [r for r in reports if r.get('lugar', {}).get('floor') == int(filters['floor'])]
-        
-        # 8. Búsqueda de texto en descripción
-        if term:
-            reports = apply_text_search(reports, 'descripcion', term)
         
         # 9. Ordenar reportes
         reports = sort_items(reports, order_by, order)
@@ -162,10 +148,7 @@ def handler(event, context):
         return create_response(200, {
             'reports': paginated_result['items'],
             'pagination': paginated_result['pagination'],
-            'filters_applied': {
-                'query_filters': filters,
-                'text_search': term if term else None
-            }
+            'filters_applied': filters
         })
         
     except ValueError as e:

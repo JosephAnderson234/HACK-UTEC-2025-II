@@ -108,6 +108,7 @@ def handler(event, context):
         lugar_nombre = report.get('lugar', {}).get('nombre', 'lugar desconocido')
         urgencia = report.get('urgencia', 'MEDIA')
         author_id = report.get('author_id')
+        sector = report.get('assigned_sector', 'General')
         
         notification_message = f'Estado del reporte actualizado a {new_status} para {lugar_nombre}'
         
@@ -116,27 +117,34 @@ def handler(event, context):
         
         # Enviar notificación a través de EventBridge
         try:
+            event_detail = {
+                'report_id': report_id,
+                'old_status': report.get('estado', 'PENDIENTE'),
+                'new_status': new_status,
+                'urgencia': urgencia,
+                'lugar': lugar_nombre,
+                'sector': sector,
+                'updated_by': user_id,
+                'author_id': author_id,
+                'message': notification_message,
+                'timestamp': timestamp
+            }
+            print(f"Sending EventBridge event: {json.dumps(event_detail)}")
+            
             events.put_events(
                 Entries=[
                     {
                         'Source': 'utec-alerta.reports',
                         'DetailType': 'StatusUpdated',
-                        'Detail': json.dumps({
-                            'report_id': report_id,
-                            'old_status': report.get('estado', 'PENDIENTE'),
-                            'new_status': new_status,
-                            'urgencia': urgencia,
-                            'lugar': lugar_nombre,
-                            'updated_by': user_id,
-                            'author_id': author_id,
-                            'message': notification_message,
-                            'timestamp': timestamp
-                        })
+                        'Detail': json.dumps(event_detail)
                     }
                 ]
             )
+            print("EventBridge event sent successfully")
         except Exception as e:
             print(f"Error sending EventBridge notification: {e}")
+            import traceback
+            traceback.print_exc()
         
         return create_response(200, {
             'message': 'Status updated successfully',

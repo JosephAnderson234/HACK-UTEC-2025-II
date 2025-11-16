@@ -1,8 +1,28 @@
 import json
 import boto3
 import os
+import sys
+from decimal import Decimal
+
+# Agregar el directorio padre al path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 dynamodb = boto3.resource('dynamodb')
+
+# Helper para convertir Decimal a tipos nativos de Python
+def decimal_to_native(obj):
+    """Convierte Decimal a int o float según corresponda"""
+    if isinstance(obj, list):
+        return [decimal_to_native(i) for i in obj]
+    elif isinstance(obj, dict):
+        return {k: decimal_to_native(v) for k, v in obj.items()}
+    elif isinstance(obj, Decimal):
+        if obj % 1 == 0:
+            return int(obj)
+        else:
+            return float(obj)
+    else:
+        return obj
 
 def handler(event, context):
     """
@@ -34,7 +54,7 @@ def handler(event, context):
         # Obtener todas las conexiones activas
         connections_table = dynamodb.Table('t_connections')
         connections_response = connections_table.scan()
-        connections = connections_response.get('Items', [])
+        connections = [decimal_to_native(item) for item in connections_response.get('Items', [])]
         
         if not connections:
             print("No active connections to notify")
@@ -43,29 +63,23 @@ def handler(event, context):
                 'body': json.dumps({'message': 'No active connections'})
             }
         
-        # Obtener el endpoint de la API Gateway WebSocket
-        # El endpoint se construye desde las variables de contexto
-        domain_name = event.get('requestContext', {}).get('domainName')
-        stage = event.get('requestContext', {}).get('stage', 'production')
+        # Obtener el endpoint de WebSocket desde variables de entorno
+        websocket_endpoint = os.environ.get('WEBSOCKET_API_ENDPOINT')
         
-        # Si no viene en el evento, usar variables de entorno o construir desde el contexto de Lambda
-        if not domain_name:
-            # Intentar obtener desde variables de entorno o ARN
-            domain_name = os.environ.get('WEBSOCKET_API_ENDPOINT')
-        
-        if not domain_name:
-            print("Warning: WebSocket endpoint not found, will try to construct it")
-            # En producción, esto debería venir del contexto o variables de entorno
-            # Por ahora, registramos el error pero continuamos
+        if not websocket_endpoint:
+            print("ERROR: WEBSOCKET_API_ENDPOINT environment variable not set")
+            return {
+                'statusCode': 500,
+                'body': json.dumps({'error': 'WebSocket endpoint not configured'})
+            }
         
         # Crear cliente de API Gateway Management
-        if domain_name:
-            endpoint_url = f"https://{domain_name}/{stage}"
-            api_client = boto3.client('apigatewaymanagementapi', endpoint_url=endpoint_url)
-        else:
-            # Fallback: intentar obtener el endpoint desde el contexto de la función
-            print("Attempting to send notifications without explicit endpoint")
-            api_client = None
+        endpoint_url = f"https://{websocket_endpoint}"
+        api_client = boto3.client('apigatewaymanagementapi', endpoint_url=endpoint_url)
+        print(f"WebSocket endpoint: {endpoint_url}")
+        
+        # Obtener tabla de usuarios para consultar sectores
+        users_table = dynamodb.Table('t_usuarios')
         
         # Preparar notificación según tipo de evento
         notification = {
@@ -90,23 +104,61 @@ def handler(event, context):
                 
                 # Determinar si enviar notificación basado en rol y contexto
                 should_notify = False
+                custom_message = message
                 
                 if detail_type == 'ReportCreated':
-                    # Notificar a autoridades del sector correspondiente
-                    if user_role in ['authority', 'admin']:
+                    # Notificar a autoridades del sector correspondiente y admins
+                    if user_role == 'authority':
+                        # Obtener el sector del usuario
+                        try:
+                            user_response = users_table.get_item(Key={'id': user_id})
+                            if 'Item' in user_response:
+                                user_data = decimal_to_native(user_response['Item'])
+                                user_sector = user_data.get('data_authority', {}).get('sector', '')
+                                
+                                # Solo notificar si el reporte es de su sector
+                                if user_sector == sector:
+                                    should_notify = True
+                                    custom_message = f"Nuevo reporte de urgencia {urgencia} en tu sector ({sector})"
+                                    print(f"Authority {user_id} matches sector {sector}")
+                                else:
+                                    print(f"Authority {user_id} sector {user_sector} doesn't match report sector {sector}")
+                        except Exception as e:
+                            print(f"Error getting user data for {user_id}: {e}")
+                    
+                    elif user_role == 'admin':
+                        # Admins reciben todas las notificaciones
                         should_notify = True
-                        notification['message'] = f"Nuevo reporte de urgencia {urgencia} en sector {sector}"
+                        custom_message = f"Nuevo reporte de urgencia {urgencia} en sector {sector}"
+                        print(f"Admin {user_id} notified")
                 
                 elif detail_type == 'StatusUpdated':
                     # Notificar al autor del reporte
                     if user_id == author_id:
                         should_notify = True
-                        notification['message'] = f"Tu reporte ha sido actualizado: {message}"
-                    # También notificar a autoridades
-                    elif user_role in ['authority', 'admin']:
+                        custom_message = f"Tu reporte ha sido actualizado: {message}"
+                        print(f"Author {user_id} notified about status update")
+                    # También notificar a autoridades del sector y admins
+                    elif user_role == 'authority':
+                        try:
+                            user_response = users_table.get_item(Key={'id': user_id})
+                            if 'Item' in user_response:
+                                user_data = decimal_to_native(user_response['Item'])
+                                user_sector = user_data.get('data_authority', {}).get('sector', '')
+                                
+                                if user_sector == sector:
+                                    should_notify = True
+                                    custom_message = f"Reporte actualizado en tu sector: {message}"
+                        except Exception as e:
+                            print(f"Error getting user data for {user_id}: {e}")
+                    elif user_role == 'admin':
                         should_notify = True
+                        custom_message = f"Reporte actualizado: {message}"
                 
-                if should_notify and api_client:
+                if should_notify:
+                    # Actualizar el mensaje en la notificación
+                    notification['message'] = custom_message
+                    
                     api_client.post_to_connection(
                         ConnectionId=connection_id,
                         Data=json.dumps(notification).encode('utf-8')
@@ -121,6 +173,8 @@ def handler(event, context):
                 failed_count += 1
             except Exception as e:
                 print(f"Error sending to {connection_id}: {e}")
+                import traceback
+                traceback.print_exc()
                 failed_count += 1
         
         return {

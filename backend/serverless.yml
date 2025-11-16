@@ -10,7 +10,8 @@ provider:
   environment:
     BUCKET_INGESTA: ${self:service}-${sls:stage}-bucket-of-hack-utec
     JWT_SECRET_PARAM: /utec-alerta/jwt-secret
-    WEBSOCKET_API_ENDPOINT: !Sub '${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com'
+    WEBSOCKET_API_ENDPOINT:
+      Fn::Sub: '${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}'
 
 package:
   patterns:

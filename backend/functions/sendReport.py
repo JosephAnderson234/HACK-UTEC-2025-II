@@ -145,24 +145,31 @@ def handler(event, context):
         
         # Enviar notificación a través de EventBridge
         try:
+            event_detail = {
+                'report_id': report_id,
+                'urgencia': body['urgencia'],
+                'lugar': lugar.get('name', 'Sin nombre'),
+                'sector': assigned_sector,
+                'author_id': user_id,
+                'timestamp': timestamp,
+                'message': f'Nuevo reporte de urgencia {body["urgencia"]} en {lugar.get("name", "Sin nombre")}'
+            }
+            print(f"Sending EventBridge event: {json.dumps(event_detail)}")
+            
             events.put_events(
                 Entries=[
                     {
                         'Source': 'utec-alerta.reports',
                         'DetailType': 'ReportCreated',
-                        'Detail': json.dumps({
-                            'report_id': report_id,
-                            'urgencia': body['urgencia'],
-                            'lugar': lugar.get('name', 'Sin nombre'),
-                            'sector': assigned_sector,
-                            'author_id': user_id,
-                            'message': f'Nuevo reporte de urgencia {body["urgencia"]} en {lugar.get("name", "Sin nombre")}'
-                        })
+                        'Detail': json.dumps(event_detail)
                     }
                 ]
             )
+            print("EventBridge event sent successfully")
         except Exception as e:
             print(f"Error sending EventBridge notification: {e}")
+            import traceback
+            traceback.print_exc()
         
         return create_response(201, {
             'message': 'Report created successfully',

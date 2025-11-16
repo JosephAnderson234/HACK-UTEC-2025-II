@@ -21,7 +21,7 @@ users_table = dynamodb.Table('t_usuarios')
 def handler(event, context):
     """
     GET /reports
-    Query params: ?page=1&size=20&estado=PENDIENTE&urgencia=ALTA&orderBy=created_at&order=desc
+    Query params: ?page=1&size=20&estado=PENDIENTE&urgencia=ALTA&sector=Mantenimiento&orderBy=created_at&order=desc
     """
     try:
         # 1. Extraer y validar token
@@ -35,9 +35,8 @@ def handler(event, context):
         role = payload['user_data']['role']
         user_data = payload['user_data']
         
-        # 3. Verificar que sea authority o admin
-        if role not in ['authority', 'admin']:
-            return create_response(403, {'error': 'Only authorities and admins can access this endpoint'})
+        # 3. Todos los roles pueden ver reportes (transparencia total)
+        # No hay restricción de roles
         
         # 4. Extraer parámetros de query
         query_params = event.get('queryStringParameters') or {}
@@ -58,13 +57,15 @@ def handler(event, context):
         # 6. Sin filtrado automático por rol (transparencia total)
         # Todos los usuarios pueden ver todos los reportes
         
-        # 7. Aplicar filtros opcionales (solo estado y urgencia)
-        filters = extract_filter_params(query_params, ['estado', 'urgencia'])
+        # 7. Aplicar filtros opcionales (estado, urgencia y sector)
+        filters = extract_filter_params(query_params, ['estado', 'urgencia', 'assigned_sector'])
         if filters:
             if 'estado' in filters:
                 reports = [r for r in reports if r.get('estado') == filters['estado']]
             if 'urgencia' in filters:
                 reports = [r for r in reports if r.get('urgencia') == filters['urgencia']]
+            if 'assigned_sector' in filters:
+                reports = [r for r in reports if r.get('assigned_sector') == filters['assigned_sector']]
         
         # 9. Ordenar reportes
         reports = sort_items(reports, order_by, order)

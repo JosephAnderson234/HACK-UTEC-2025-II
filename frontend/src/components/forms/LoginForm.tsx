@@ -3,15 +3,19 @@ import { useForm } from "react-hook-form"
 import LogoUtec from "@/assets/UTEC-Logo.jpg";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import { useSearchParams } from "react-router-dom";
 
 export default function LoginForm() {
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthRegisterRequest>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { login } = useAuth();
     const onSubmit = async (data: AuthRegisterRequest) => {
+
         await login(data);
-        navigate('/dashboard');
+        const redirectTo = searchParams.get('from') || '/dashboard';
+        navigate(redirectTo);
     }
 
     return (

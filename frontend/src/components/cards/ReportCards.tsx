@@ -39,11 +39,7 @@ export const ReportCard = ({data}: {data: Report}) => {
 
 	return (
 		<article className="rounded-md border border-gray-200 bg-white shadow-sm overflow-hidden">
-			{/* Imagen del reporte (aún no lista). Actualmente el backend devuelve una URL de S3.
-					Cuando la URL sea accesible por HTTP, descomentar y asegurar el dominio en la política CSP:
-					<img src={data.image_url ?? ''} alt="Imagen del reporte" className="w-full h-40 object-cover" />
-			*/}
-
+			{data.image_url ? <img src={data.image_url ?? ''} alt="Imagen del reporte" className="w-full h-40 object-cover" /> : null}
 			<div className="p-4 sm:p-5">
 				<div className="flex flex-wrap items-center gap-2 mb-2">
 					<span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full border ${statusClasses}`}>

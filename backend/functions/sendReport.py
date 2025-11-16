@@ -108,12 +108,12 @@ def handler(event, context):
                 )
                 
                 # Generar URL HTTP firmada para el frontend (válida por 1 hora)
-            image_url = generate_presigned_url(image_key)
-            
-            if not image_url:
-                return create_response(500, {
-                    'error': 'No se pudo generar URL de acceso a la imagen'
-                })
+                image_url = generate_presigned_url(image_key)
+                
+                if not image_url:
+                    return create_response(500, {
+                        'error': 'No se pudo generar URL de acceso a la imagen'
+                    })
                 
             except Exception as e:
                 print(f"Error uploading image: {e}")

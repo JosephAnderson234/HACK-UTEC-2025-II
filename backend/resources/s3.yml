@@ -2,5 +2,5 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: s3-img
+      BucketName: ${self:provider.environment.BUCKET_INGESTA}
       AccessControl: Private

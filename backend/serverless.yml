@@ -7,6 +7,8 @@ provider:
   region: us-east-1
   iam:
     role: arn:aws:iam::538821665497:role/LabRole
+  environment:
+    BUCKET_INGESTA: ${self:service}-${sls:stage}-bucket-of-hack-utec
 
 functions:
   updateStatus:

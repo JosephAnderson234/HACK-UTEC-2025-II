@@ -9,6 +9,8 @@ provider:
     role: arn:aws:iam::538821665497:role/LabRole
   environment:
     BUCKET_INGESTA: ${self:service}-${sls:stage}-bucket-of-hack-utec
+    WEBSOCKET_API_DOMAIN: ${self:custom.websocketDomain}
+    WEBSOCKET_STAGE: ${self:custom.stage}
 
 functions:
   updateStatus:
@@ -18,7 +20,6 @@ functions:
         path: update-status
         method: post
         cors: true
-
   sendReport:
     handler: functions.sendReport.handler
     events:
@@ -57,3 +58,7 @@ resources:
 - ${file(./resources/parameter-store.yml)}
 plugins:
 - serverless-offline
+
+custom:
+  websocketDomain: ${ApiGatewayRestApi}.execute-api.${self:provider.region}.amazonaws.com
+  stage: ${sls:stage}

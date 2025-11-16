@@ -154,6 +154,17 @@ functions:
         cors: true
 
   # ========================================
+  # ESTADÍSTICAS (1 nueva función)
+  # ========================================
+  getStats:
+    handler: functions.getStats.handler
+    events:
+    - http:
+        path: stats
+        method: get
+        cors: true
+
+  # ========================================
   # WEBSOCKET (2 funciones)
   # ========================================
   onConnect:

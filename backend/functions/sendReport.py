@@ -11,6 +11,7 @@ from decimal import Decimal
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.jwt_validator import validate_token, extract_token_from_event, create_response
+from utils.s3_helper import generate_presigned_url
 
 dynamodb = boto3.resource('dynamodb')
 s3 = boto3.client('s3')
@@ -106,7 +107,13 @@ def handler(event, context):
                     ContentType='image/jpeg'
                 )
                 
-                image_url = f"s3://{bucket_name}/{image_key}"
+                # Generar URL HTTP firmada para el frontend (válida por 1 hora)
+            image_url = generate_presigned_url(image_key)
+            
+            if not image_url:
+                return create_response(500, {
+                    'error': 'No se pudo generar URL de acceso a la imagen'
+                })
                 
             except Exception as e:
                 print(f"Error uploading image: {e}")

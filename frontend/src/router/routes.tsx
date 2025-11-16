@@ -39,13 +39,11 @@ const router = createBrowserRouter([
                     },
                     {
                         path:"report",
-                        element: <ReportPage/>,
-                        children:[
-                            {
-                                path:"new",
-                                element: <CreateReportPage/>
-                            }
-                        ]
+                        element: <ReportPage/>
+                    },
+                    {
+                        path:"report/new",
+                        element: <CreateReportPage/>
                     }
                 ]
             },

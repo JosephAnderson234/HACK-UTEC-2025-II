@@ -1,0 +1,7 @@
+Resources:
+  AuthParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /auth/secret
+      Type: String
+      Value: your-secret-value

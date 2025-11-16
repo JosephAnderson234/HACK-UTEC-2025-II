@@ -2,54 +2,56 @@ org: hackutec
 service: utec-alerta
 
 provider:
-    name: aws
-    runtime: python3.12
-    region: us-east-1
-    iam:
-        role: arn:aws:iam::538821665497:role/LabRole
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  iam:
+    role: arn:aws:iam::538821665497:role/LabRole
 
 functions:
-    updateStatus:
-        handler: functions.updateStatus.handler
-        events:
-          - http:
-                path: update-status
-                method: post
-                cors: true
+  updateStatus:
+    handler: functions.updateStatus.handler
+    events:
+    - http:
+        path: update-status
+        method: post
+        cors: true
 
-    sendReport:
-        handler: functions.sendReport.handler
-        events:
-          - eventBridge:
-                pattern:
-                    source:
-                      - aws.events
-    onConnect:
-        handler: functions.onConnect.handler
-        events:
-          - websocket:
-                route: $connect
-    onDisconnect:
-        handler: functions.onDisconnect.handler
-        events:
-          - websocket:
-                route: $disconnect
-    sendNotify:
-        handler: functions.sendNotify.handler
-        events:
-          - eventBridge:
-                pattern:
-                    source:
-                      - aws.events
-    auth:
-        handler: functions.auth.handler
-        events:
-          - http:
-                path: auth
-                method: post
-                cors: true
+  sendReport:
+    handler: functions.sendReport.handler
+    events:
+    - eventBridge:
+        pattern:
+          source:
+          - aws.events
+  onConnect:
+    handler: functions.onConnect.handler
+    events:
+    - websocket:
+        route: $connect
+  onDisconnect:
+    handler: functions.onDisconnect.handler
+    events:
+    - websocket:
+        route: $disconnect
+  sendNotify:
+    handler: functions.sendNotify.handler
+    events:
+    - eventBridge:
+        pattern:
+          source:
+          - aws.events
+  auth:
+    handler: functions.auth.handler
+    events:
+    - http:
+        path: auth
+        method: post
+        cors: true
 
 resources:
-  - ${file(./resources/dynamodb-tables.yml)}
+- ${file(./resources/dynamodb-tables.yml)}
+- ${file(./resources/s3.yml)}
+- ${file(./resources/parameter-store.yml)}
 plugins:
-  - serverless-offline
+- serverless-offline

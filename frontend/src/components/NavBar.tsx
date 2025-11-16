@@ -21,7 +21,6 @@ const linksByRole: Record<Role, { name: string; href: string }[]> = {
     student: [
         { name: 'Dashboard', href: '/dashboard' },
         { name: 'Nuevo Reporte', href: '/report/new' },
-        { name: 'Reportes', href: '/report' },
         { name: 'Mis Reportes', href: '/my-report/' }
     ]
 };

@@ -1,8 +1,10 @@
-type resource = 'AUTH_URL' | 'WS_URL';
+type resource = 'AUTH_URL' | 'WS_URL' | 'REPORTS_URL' | 'PLACE_URL';
 
 const envMap: Record<resource, string> = {
     AUTH_URL: 'VITE_API_URL_AUTH',
     WS_URL: 'VITE_API_URL_WS',
+    REPORTS_URL: 'VITE_API_URL_REPORTS',
+    PLACE_URL: 'VITE_API_URL_PLACES',
 };
 
 export function loadEnv(resource: resource): string {

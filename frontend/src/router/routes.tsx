@@ -6,6 +6,8 @@ import { createBrowserRouter } from "react-router";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardPage from "@/pages/Dashboard";
 import RegisterPage from "@/pages/Register";
+import ReportPage from "@/pages/ReportPage";
+import CreateReportPage from "@/pages/CreateReportPage";
 
 
 
@@ -34,6 +36,16 @@ const router = createBrowserRouter([
                     {
                         path:"dashboard",
                         element: <DashboardPage/>
+                    },
+                    {
+                        path:"reports",
+                        element: <ReportPage/>,
+                        children:[
+                            {
+                                path:"new",
+                                element: <CreateReportPage/>
+                            }
+                        ]
                     }
                 ]
             },

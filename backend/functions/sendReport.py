@@ -11,6 +11,7 @@ from decimal import Decimal
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.jwt_validator import validate_token, extract_token_from_event, create_response
+from utils.s3_helper import generate_presigned_url
 
 dynamodb = boto3.resource('dynamodb')
 s3 = boto3.client('s3')
@@ -106,7 +107,13 @@ def handler(event, context):
                     ContentType='image/jpeg'
                 )
                 
-                image_url = f"s3://{bucket_name}/{image_key}"
+                # Generar URL HTTP firmada para el frontend (válida por 1 hora)
+            image_url = generate_presigned_url(image_key)
+            
+            if not image_url:
+                return create_response(500, {
+                    'error': 'No se pudo generar URL de acceso a la imagen'
+                })
                 
             except Exception as e:
                 print(f"Error uploading image: {e}")
@@ -129,13 +136,19 @@ def handler(event, context):
             'descripcion': body['descripcion'],
             'fecha_hora': timestamp,
             'urgencia': body['urgencia'],
+            'urgencia_original': body['urgencia'],
+            'urgencia_clasificada': body['urgencia'],
             'estado': 'PENDIENTE',
             'author_id': user_id,
             'assigned_to': None,
             'assigned_sector': assigned_sector,
             'created_at': timestamp,
             'updated_at': timestamp,
-            'resolved_at': None
+            'resolved_at': None,
+            'clasificacion_auto': False,
+            'classification_score': None,
+            'notification_sent': False,
+            'notification_sent_at': None
         }
         
         if image_url:
@@ -177,6 +190,10 @@ def handler(event, context):
                 'id_reporte': report_id,
                 'estado': 'PENDIENTE',
                 'urgencia': body['urgencia'],
+                'urgencia_original': body['urgencia'],
+                'urgencia_clasificada': body['urgencia'],
+                'clasificacion_auto': False,
+                'classification_score': None,
                 'lugar': report_item['lugar'],
                 'created_at': timestamp
             }

@@ -3,6 +3,7 @@ from airflow.decorators import dag, task
 import boto3
 from boto3.dynamodb.conditions import Attr
 import json
+from decimal import Decimal
 
 AWS_REGION = "us-east-1"
 DYNAMO_TABLE = "t_reportes"

@@ -3,6 +3,7 @@ import json
 import boto3
 import os
 from typing import Dict, Optional
+from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
 ssm = boto3.client('ssm')
@@ -106,6 +107,21 @@ def extract_token_from_event(event: Dict) -> Optional[str]:
     return None
 
 
+def decimal_to_native(obj):
+    """Convierte Decimal a tipos nativos de Python para JSON serialization"""
+    if isinstance(obj, list):
+        return [decimal_to_native(i) for i in obj]
+    elif isinstance(obj, dict):
+        return {k: decimal_to_native(v) for k, v in obj.items()}
+    elif isinstance(obj, Decimal):
+        if obj % 1 == 0:
+            return int(obj)
+        else:
+            return float(obj)
+    else:
+        return obj
+
+
 def create_response(status_code: int, body: Dict, headers: Dict = None) -> Dict:
     """
     Crea una respuesta HTTP estandarizada.
@@ -126,6 +142,9 @@ def create_response(status_code: int, body: Dict, headers: Dict = None) -> Dict:
     
     if headers:
         default_headers.update(headers)
+    
+    # Convertir Decimal a tipos nativos antes de serializar
+    body = decimal_to_native(body)
     
     return {
         'statusCode': status_code,

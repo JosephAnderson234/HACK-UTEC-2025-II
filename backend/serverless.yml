@@ -26,7 +26,9 @@ package:
     - 'PyJWT-*.dist-info/**'
 
 functions:
-  # Autenticación
+  # ========================================
+  # AUTENTICACIÓN (2 funciones)
+  # ========================================
   register:
     handler: functions.auth.handler
     events:
@@ -43,7 +45,9 @@ functions:
         method: post
         cors: true
 
-  # Gestión de reportes
+  # ========================================
+  # GESTIÓN DE REPORTES - ESCRITURA (2 funciones existentes)
+  # ========================================
   sendReport:
     handler: functions.sendReport.handler
     events:
@@ -60,7 +64,86 @@ functions:
         method: post
         cors: true
 
-  # WebSocket
+  # ========================================
+  # GESTIÓN DE REPORTES - LECTURA (4 nuevas funciones)
+  # ========================================
+  getMyReports:
+    handler: functions.getMyReports.handler
+    events:
+    - http:
+        path: reports/my-reports
+        method: get
+        cors: true
+  
+  getReports:
+    handler: functions.getReports.handler
+    events:
+    - http:
+        path: reports
+        method: get
+        cors: true
+  
+  getReportDetail:
+    handler: functions.getReportDetail.handler
+    events:
+    - http:
+        path: reports/{id_reporte}
+        method: get
+        cors: true
+        request:
+          parameters:
+            paths:
+              id_reporte: true
+  
+  getAssignedReports:
+    handler: functions.getAssignedReports.handler
+    events:
+    - http:
+        path: reports/assigned-to-me
+        method: get
+        cors: true
+
+  # ========================================
+  # GESTIÓN DE REPORTES - ASIGNACIÓN (2 nuevas funciones)
+  # ========================================
+  takeReport:
+    handler: functions.takeReport.handler
+    events:
+    - http:
+        path: reports/{id_reporte}/take
+        method: post
+        cors: true
+        request:
+          parameters:
+            paths:
+              id_reporte: true
+  
+  assignReport:
+    handler: functions.assignReport.handler
+    events:
+    - http:
+        path: reports/{id_reporte}/assign
+        method: post
+        cors: true
+        request:
+          parameters:
+            paths:
+              id_reporte: true
+
+  # ========================================
+  # GESTIÓN DE LUGARES (1 nueva función)
+  # ========================================
+  getPlaces:
+    handler: functions.getPlaces.handler
+    events:
+    - http:
+        path: places
+        method: get
+        cors: true
+
+  # ========================================
+  # WEBSOCKET (2 funciones)
+  # ========================================
   onConnect:
     handler: functions.onConnect.handler
     events:
@@ -73,7 +156,9 @@ functions:
     - websocket:
         route: $disconnect
   
-  # Notificaciones
+  # ========================================
+  # NOTIFICACIONES (1 función)
+  # ========================================
   sendNotify:
     handler: functions.sendNotify.handler
     events:

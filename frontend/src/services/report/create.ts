@@ -8,7 +8,7 @@ export const createReport = async (reportData: CreateReportRequest) => {
     if (!token) {
         throw new Error('User is not authenticated');
     }
-    const response = await fetch(`${REPORTS_URL}/reports/create`, {
+    const response = await fetch(`${REPORTS_URL}/create`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -5,6 +5,7 @@ import sys
 import base64
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
 # Agregar el directorio padre al path para importar utils
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,6 +15,21 @@ from utils.jwt_validator import validate_token, extract_token_from_event, create
 dynamodb = boto3.resource('dynamodb')
 s3 = boto3.client('s3')
 events = boto3.client('events')
+
+# Helper para convertir Decimal a tipos nativos de Python
+def decimal_to_native(obj):
+    """Convierte Decimal a int o float según corresponda"""
+    if isinstance(obj, list):
+        return [decimal_to_native(i) for i in obj]
+    elif isinstance(obj, dict):
+        return {k: decimal_to_native(v) for k, v in obj.items()}
+    elif isinstance(obj, Decimal):
+        if obj % 1 == 0:
+            return int(obj)
+        else:
+            return float(obj)
+    else:
+        return obj
 
 def handler(event, context):
     """
@@ -65,7 +81,8 @@ def handler(event, context):
         if 'Item' not in lugar_response:
             return create_response(404, {'error': 'Place not found'})
         
-        lugar = lugar_response['Item']
+        # Convertir Decimal a tipos nativos
+        lugar = decimal_to_native(lugar_response['Item'])
         
         # Generar ID del reporte
         report_id = str(uuid.uuid4())

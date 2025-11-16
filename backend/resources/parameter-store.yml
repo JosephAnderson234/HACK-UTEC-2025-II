@@ -1,7 +1,8 @@
 Resources:
-  AuthParameter:
+  JWTSecretParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /auth/secret
+      Name: /utec-alerta/jwt-secret
       Type: String
-      Value: your-secret-value
+      Value: utec-alerta-super-secret-jwt-key-2025-hackathon-change-in-production
+      Description: JWT Secret for authentication tokens

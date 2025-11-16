@@ -2,12 +2,12 @@ Resources:
   ReportsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Reports
+      TableName: t_reportes
       AttributeDefinitions:
-      - AttributeName: reportId
+      - AttributeName: id_reporte
         AttributeType: S
       KeySchema:
-      - AttributeName: reportId
+      - AttributeName: id_reporte
         KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
@@ -16,7 +16,7 @@ Resources:
   WSConnections:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: WSConnections
+      TableName: t_connections
       AttributeDefinitions:
       - AttributeName: connectionId
         AttributeType: S
@@ -30,7 +30,33 @@ Resources:
   TUsuarios:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: users
+      TableName: t_usuarios
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      - AttributeName: email
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      GlobalSecondaryIndexes:
+      - IndexName: EmailIndex
+        KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  TLugares:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: t_lugares
       AttributeDefinitions:
       - AttributeName: id
         AttributeType: S

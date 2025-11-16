@@ -9,60 +9,76 @@ provider:
     role: arn:aws:iam::538821665497:role/LabRole
   environment:
     BUCKET_INGESTA: ${self:service}-${sls:stage}-bucket-of-hack-utec
-    WEBSOCKET_API_DOMAIN: ${self:custom.websocketDomain}
-    WEBSOCKET_STAGE: ${self:custom.stage}
+    JWT_SECRET_PARAM: /utec-alerta/jwt-secret
+    WEBSOCKET_API_ENDPOINT: !Sub '${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com'
 
 functions:
-  updateStatus:
-    handler: functions.updateStatus.handler
+  # Autenticación
+  register:
+    handler: functions.auth.handler
     events:
     - http:
-        path: update-status
+        path: auth/register
         method: post
         cors: true
+  
+  login:
+    handler: functions.auth.handler
+    events:
+    - http:
+        path: auth/login
+        method: post
+        cors: true
+
+  # Gestión de reportes
   sendReport:
     handler: functions.sendReport.handler
     events:
     - http:
-        path: send-report
+        path: reports/create
         method: post
         cors: true
-    - eventBridge:
-        pattern:
-          source:
-          - aws.events
+  
+  updateStatus:
+    handler: functions.updateStatus.handler
+    events:
+    - http:
+        path: reports/update-status
+        method: post
+        cors: true
+
+  # WebSocket
   onConnect:
     handler: functions.onConnect.handler
     events:
     - websocket:
         route: $connect
+  
   onDisconnect:
     handler: functions.onDisconnect.handler
     events:
     - websocket:
         route: $disconnect
+  
+  # Notificaciones
   sendNotify:
     handler: functions.sendNotify.handler
     events:
     - eventBridge:
         pattern:
           source:
-          - aws.events
-  auth:
-    handler: functions.auth.handler
-    events:
-    - http:
-        path: auth
-        method: post
-        cors: true
+          - utec-alerta.reports
+          detail-type:
+          - ReportCreated
+          - StatusUpdated
 
 resources:
 - ${file(./resources/dynamodb-tables.yml)}
 - ${file(./resources/s3.yml)}
 - ${file(./resources/parameter-store.yml)}
+
 plugins:
 - serverless-offline
 
 custom:
-  websocketDomain: ${ApiGatewayRestApi}.execute-api.${self:provider.region}.amazonaws.com
   stage: ${sls:stage}

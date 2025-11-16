@@ -1,36 +1,136 @@
 import json
 import boto3
+import os
+import sys
+from datetime import datetime
+
+# Agregar el directorio padre al path para importar utils
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils.jwt_validator import validate_token, extract_token_from_event, create_response
 
 dynamodb = boto3.resource('dynamodb')
 events = boto3.client('events')
 
 def handler(event, context):
-    body = json.loads(event['body'])
-    report_id = body['reportId']
-    new_status = body['status']
+    """
+    Handler para actualizar el estado de un reporte.
+    Requiere autenticación JWT.
+    Solo autoridades y administradores pueden actualizar estados.
     
-    table = dynamodb.Table('Reports')
-    table.update_item(
-        Key={'reportId': report_id},
-        UpdateExpression='SET #s = :val',
-        ExpressionAttributeNames={'#s': 'status'},
-        ExpressionAttributeValues={':val': new_status}
-    )
-    
-    # Lanzar evento EventBridge para notificación
-    events.put_events(
-        Entries=[
-            {
-                'Source': 'aws.events',
-                'DetailType': 'Status Update Notification',
-                'Detail': json.dumps({
-                    'message': f'Status updated for report {report_id} to {new_status}'
-                })
-            }
-        ]
-    )
-    
-    return {
-        'statusCode': 200,
-        'body': json.dumps({'message': 'Status updated'})
+    POST /update-status
+    Body: {
+        "id_reporte": "uuid",
+        "estado": "PENDIENTE" | "ATENDIENDO" | "RESUELTO",
+        "comentario": "string" (opcional)
     }
+    """
+    try:
+        # Validar token JWT
+        token = extract_token_from_event(event)
+        if not token:
+            return create_response(401, {'error': 'Missing authentication token'})
+        
+        try:
+            token_data = validate_token(token)
+            user_id = token_data['user_id']
+            user_role = token_data.get('role')
+        except Exception as e:
+            return create_response(401, {'error': f'Invalid token: {str(e)}'})
+        
+        # Solo autoridades pueden actualizar estados
+        if user_role not in ['authority', 'admin']:
+            return create_response(403, {'error': 'Only authorities can update report status'})
+        
+        # Parsear el body
+        body = json.loads(event.get('body', '{}'))
+        
+        # Validar campos requeridos
+        if 'id_reporte' not in body or 'estado' not in body:
+            return create_response(400, {'error': 'id_reporte and estado are required'})
+        
+        # Validar estado
+        valid_estados = ['PENDIENTE', 'ATENDIENDO', 'RESUELTO']
+        if body['estado'] not in valid_estados:
+            return create_response(400, {'error': f'estado must be one of: {", ".join(valid_estados)}'})
+        
+        report_id = body['id_reporte']
+        new_status = body['estado']
+        
+        # Obtener el reporte actual
+        reports_table = dynamodb.Table('t_reportes')
+        report_response = reports_table.get_item(Key={'id_reporte': report_id})
+        
+        if 'Item' not in report_response:
+            return create_response(404, {'error': 'Report not found'})
+        
+        report = report_response['Item']
+        timestamp = datetime.utcnow().isoformat() + 'Z'
+        
+        # Preparar actualización
+        update_expression = 'SET estado = :estado, updated_at = :updated_at, assigned_to = :assigned_to'
+        expression_values = {
+            ':estado': new_status,
+            ':updated_at': timestamp,
+            ':assigned_to': user_id
+        }
+        
+        # Si el estado es RESUELTO, agregar resolved_at
+        if new_status == 'RESUELTO':
+            update_expression += ', resolved_at = :resolved_at'
+            expression_values[':resolved_at'] = timestamp
+        
+        # Actualizar reporte
+        reports_table.update_item(
+            Key={'id_reporte': report_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_values
+        )
+        
+        # Preparar mensaje de notificación
+        lugar_nombre = report.get('lugar', {}).get('nombre', 'lugar desconocido')
+        urgencia = report.get('urgencia', 'MEDIA')
+        author_id = report.get('author_id')
+        
+        notification_message = f'Estado del reporte actualizado a {new_status} para {lugar_nombre}'
+        
+        if 'comentario' in body:
+            notification_message += f'. Comentario: {body["comentario"]}'
+        
+        # Enviar notificación a través de EventBridge
+        try:
+            events.put_events(
+                Entries=[
+                    {
+                        'Source': 'utec-alerta.reports',
+                        'DetailType': 'StatusUpdated',
+                        'Detail': json.dumps({
+                            'report_id': report_id,
+                            'old_status': report.get('estado', 'PENDIENTE'),
+                            'new_status': new_status,
+                            'urgencia': urgencia,
+                            'lugar': lugar_nombre,
+                            'updated_by': user_id,
+                            'author_id': author_id,
+                            'message': notification_message,
+                            'timestamp': timestamp
+                        })
+                    }
+                ]
+            )
+        except Exception as e:
+            print(f"Error sending EventBridge notification: {e}")
+        
+        return create_response(200, {
+            'message': 'Status updated successfully',
+            'report': {
+                'id_reporte': report_id,
+                'estado': new_status,
+                'updated_at': timestamp,
+                'assigned_to': user_id
+            }
+        })
+    
+    except Exception as e:
+        print(f"Error in updateStatus handler: {e}")
+        return create_response(500, {'error': f'Internal server error: {str(e)}'})

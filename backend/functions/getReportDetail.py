@@ -7,6 +7,7 @@ Roles permitidos: student (solo sus reportes), authority (solo su sector), admin
 import json
 import boto3
 from utils.jwt_validator import validate_token, extract_token_from_event, create_response
+from utils.s3_helper import add_image_urls_to_report
 
 dynamodb = boto3.resource('dynamodb')
 reports_table = dynamodb.Table('t_reportes')
@@ -110,6 +111,9 @@ def handler(event, context):
         # 7. Remover campo password si por alguna razón existe
         if 'password' in report:
             del report['password']
+        
+        # Convertir S3 URI a URL HTTP firmada
+        report = add_image_urls_to_report(report)
         
         # 8. Retornar reporte completo enriquecido
         return create_response(200, {

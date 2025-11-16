@@ -190,7 +190,7 @@ Authorization: Bearer <token>
       "assigned_sector": "Mantenimiento",
       "created_at": "2025-11-16T10:30:00Z",
       "updated_at": "2025-11-16T10:45:00Z",
-      "image_url": "s3://..."
+      "image_url": "https://bucket.s3.amazonaws.com/reports/abc-123.jpg?X-Amz-Algorithm=..."
     }
   ],
   "pagination": {
@@ -229,7 +229,7 @@ Authorization: Bearer <token>
   "created_at": "2025-11-16T10:30:00Z",
   "updated_at": "2025-11-16T12:00:00Z",
   "resolved_at": "2025-11-16T12:00:00Z",
-  "image_url": "s3://..."
+  "image_url": "https://bucket.s3.amazonaws.com/reports/xyz-456.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Expires=3600"
 }
 ```
 
@@ -338,7 +338,7 @@ Authorization: Bearer <token>
       "assigned_to": null,
       "created_at": "2025-11-16T10:30:00Z",
       "updated_at": "2025-11-16T10:30:00Z",
-      "image_url": "s3://..."
+      "image_url": "https://bucket.s3.amazonaws.com/reports/def-789.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Expires=3600"
     }
   ],
   "pagination": {
@@ -683,8 +683,44 @@ Authorization: Bearer <token>
   "created_at": "ISO timestamp",
   "updated_at": "ISO timestamp",
   "resolved_at": "ISO timestamp|null",
-  "image_url": "s3://bucket/key|null"
+  "image_url": "https://bucket.s3.amazonaws.com/reports/uuid.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Expires=3600|null"
 }
+```
+
+---
+
+## 🖼️ Gestión de Imágenes con Pre-Signed URLs
+
+**Importante:** El campo `image_url` retorna URLs HTTP firmadas de S3 con las siguientes características:
+
+### ✅ Formato de URL
+```
+https://bucket.s3.amazonaws.com/reports/uuid.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Expires=3600
+```
+
+### 🔐 Características de Seguridad
+- **Expiración:** 1 hora (3600 segundos)
+- **Acceso temporal:** URL válida solo durante el tiempo de expiración
+- **Sin credenciales:** No requiere autenticación adicional para acceder
+- **Consumo frontend:** Directamente usable en `<img src="url">` o fetch/axios
+
+### 📝 Notas Importantes
+1. **Almacenamiento interno:** DynamoDB guarda claves S3 (`reports/uuid.jpg`)
+2. **Transformación dinámica:** Lambda genera URLs HTTP al momento de consultar
+3. **Renovación:** Cada GET request genera nueva URL firmada
+4. **Frontend:** Debe usar la URL tal cual viene en el response (no modificar)
+
+### 💡 Ejemplo de Uso en Frontend
+```javascript
+// Response de API
+const report = await fetch('/reports/123', {
+  headers: { 'Authorization': `Bearer ${token}` }
+}).then(r => r.json());
+
+// Usar directamente en imagen
+<img src={report.image_url} alt="Reporte" />
+
+// La URL expira en 1 hora, refrescar si es necesario
 ```
 
 ---

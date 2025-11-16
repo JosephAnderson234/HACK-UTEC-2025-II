@@ -1,0 +1,1053 @@
+{
+	"info": {
+		"_postman_id": "utec-alerta-2025",
+		"name": "UTEC Alerta API",
+		"description": "Colección completa de endpoints para el sistema de reportes de incidencias UTEC.\n\n## 📋 Configuración Inicial\n\n### Variables de Entorno Requeridas:\n- `base_url`: URL base del API Gateway (ej: https://xyz.execute-api.us-east-1.amazonaws.com/dev)\n- `ws_url`: URL del WebSocket (ej: wss://xyz.execute-api.us-east-1.amazonaws.com/dev)\n- `student_token`: Token JWT del estudiante (se genera automáticamente en login)\n- `authority_token`: Token JWT de autoridad (se genera automáticamente en login)\n- `admin_token`: Token JWT de administrador (se genera automáticamente en login)\n\n## 🔑 Credenciales de Prueba (desde seed):\n- **Estudiante**: juan.perez@utec.edu.pe / student123\n- **Autoridad**: roberto.sanchez@utec.edu.pe / authority123\n- **Admin**: andrea.torres@utec.edu.pe / admin123\n\n## 📦 IDs útiles (desde seed):\n- **Lugar 1**: 550e8400-e29b-41d4-a716-446655440001 (Baño torre 1 piso 3)\n- **Lugar 2**: 550e8400-e29b-41d4-a716-446655440007 (Cafetería Principal)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔓 Auth - Autenticación",
+			"item": [
+				{
+					"name": "Register Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.environment.set(\"student_token\", jsonData.token);",
+									"        console.log(\"✅ Student token guardado\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Test\",\n  \"last_name\": \"Student\",\n  \"email\": \"test.student@utec.edu.pe\",\n  \"password\": \"test123\",\n  \"role\": \"student\",\n  \"DNI\": \"77777777\",\n  \"cellphone\": \"999888777\",\n  \"data_student\": {\n    \"career\": \"Ingeniería de Software\",\n    \"cycle\": 5,\n    \"code\": 202099999\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Registra un nuevo estudiante en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.environment.set(\"student_token\", jsonData.token);",
+									"        pm.environment.set(\"student_id\", jsonData.user.id);",
+									"        console.log(\"✅ Student token guardado:\", jsonData.token.substring(0, 20) + \"...\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"juan.perez@utec.edu.pe\",\n  \"password\": \"student123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login con estudiante de prueba (juan.perez@utec.edu.pe)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Authority",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.environment.set(\"authority_token\", jsonData.token);",
+									"        pm.environment.set(\"authority_id\", jsonData.user.id);",
+									"        console.log(\"✅ Authority token guardado:\", jsonData.token.substring(0, 20) + \"...\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"roberto.sanchez@utec.edu.pe\",\n  \"password\": \"authority123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login con autoridad de prueba (Jefe de Mantenimiento)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.environment.set(\"admin_token\", jsonData.token);",
+									"        pm.environment.set(\"admin_id\", jsonData.user.id);",
+									"        console.log(\"✅ Admin token guardado:\", jsonData.token.substring(0, 20) + \"...\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"andrea.torres@utec.edu.pe\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login con administrador (Directora de Operaciones)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints públicos de autenticación (registro y login)"
+		},
+		{
+			"name": "👨‍🎓 Student - Reportes",
+			"item": [
+				{
+					"name": "Create Report (con imagen)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.report && jsonData.report.id_reporte) {",
+									"        pm.environment.set(\"last_report_id\", jsonData.report.id_reporte);",
+									"        console.log(\"✅ Report ID guardado:\", jsonData.report.id_reporte);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lugar_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"urgencia\": \"ALTA\",\n  \"descripcion\": \"Fuga de agua en el baño del tercer piso, torre 1. El agua está saliendo del lavabo y mojando todo el piso.\",\n  \"image\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"create"
+							]
+						},
+						"description": "Crear reporte de ALTA urgencia con imagen en el Baño Torre 1 Piso 3.\n\nNOTA: La imagen está en base64 (1x1 pixel de prueba). Para pruebas reales, usar una imagen real codificada en base64."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Report (sin imagen)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lugar_id\": \"550e8400-e29b-41d4-a716-446655440007\",\n  \"urgencia\": \"MEDIA\",\n  \"descripcion\": \"Las mesas de la cafetería están sucias y necesitan limpieza urgente\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"create"
+							]
+						},
+						"description": "Crear reporte de MEDIA urgencia SIN imagen en la Cafetería Principal"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Reports (all)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/my-reports?page=1&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"my-reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Obtener todos mis reportes con paginación (estudiante autenticado)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Reports (filtered PENDIENTE)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/my-reports?page=1&size=10&estado=PENDIENTE&orderBy=created_at&order=desc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"my-reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "estado",
+									"value": "PENDIENTE"
+								},
+								{
+									"key": "orderBy",
+									"value": "created_at"
+								},
+								{
+									"key": "order",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Obtener solo mis reportes PENDIENTES ordenados por fecha más reciente"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Reports (filtered ALTA urgency)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/my-reports?page=1&size=10&urgencia=ALTA",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"my-reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "urgencia",
+									"value": "ALTA"
+								}
+							]
+						},
+						"description": "Obtener solo mis reportes de urgencia ALTA"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints exclusivos para estudiantes (crear reportes y ver sus propios reportes)"
+		},
+		{
+			"name": "👷 Authority - Gestión de Reportes",
+			"item": [
+				{
+					"name": "Get Assigned Reports",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authority_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/assigned-to-me?page=1&size=10&orderBy=created_at&order=desc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"assigned-to-me"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "orderBy",
+									"value": "created_at"
+								},
+								{
+									"key": "order",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Obtener reportes asignados específicamente a mí (autoridad)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Assigned Reports (ATENDIENDO)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authority_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/assigned-to-me?page=1&size=10&estado=ATENDIENDO",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"assigned-to-me"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "estado",
+									"value": "ATENDIENDO"
+								}
+							]
+						},
+						"description": "Ver solo reportes que estoy atendiendo actualmente"
+					},
+					"response": []
+				},
+				{
+					"name": "Take Report (self-assign)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authority_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_reporte\": \"{{last_report_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/take",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"take"
+							]
+						},
+						"description": "Tomar (asignarme) un reporte de mi sector"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Status to ATENDIENDO",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authority_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_reporte\": \"{{last_report_id}}\",\n  \"estado\": \"ATENDIENDO\",\n  \"comentario\": \"Personal técnico en camino al lugar del reporte\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/update-status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"update-status"
+							]
+						},
+						"description": "Cambiar estado de reporte a ATENDIENDO con comentario"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Status to RESUELTO",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authority_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_reporte\": \"{{last_report_id}}\",\n  \"estado\": \"RESUELTO\",\n  \"comentario\": \"Fuga reparada exitosamente. Baño limpio y funcional.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/update-status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"update-status"
+							]
+						},
+						"description": "Marcar reporte como RESUELTO con comentario de resolución"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reports (authority view - sector)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authority_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports?page=1&size=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Ver todos los reportes de mi sector (autoridad solo ve su sector)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para autoridades (tomar reportes, actualizar estado, ver asignados)"
+		},
+		{
+			"name": "👔 Admin - Administración Completa",
+			"item": [
+				{
+					"name": "Get All Reports (admin view)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports?page=1&size=20&orderBy=created_at&order=desc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								},
+								{
+									"key": "orderBy",
+									"value": "created_at"
+								},
+								{
+									"key": "order",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Admin puede ver TODOS los reportes sin restricción de sector"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reports (filtered by sector)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports?page=1&size=20&assigned_sector=Mantenimiento",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								},
+								{
+									"key": "assigned_sector",
+									"value": "Mantenimiento"
+								}
+							]
+						},
+						"description": "Filtrar reportes por sector específico (Mantenimiento)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reports (text search)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports?page=1&size=20&term=agua",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								},
+								{
+									"key": "term",
+									"value": "agua"
+								}
+							]
+						},
+						"description": "Buscar reportes por texto (busca en descripción y lugar)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reports (complex filters)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports?page=1&size=20&estado=PENDIENTE&urgencia=ALTA&assigned_sector=Mantenimiento&orderBy=urgencia&order=desc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								},
+								{
+									"key": "estado",
+									"value": "PENDIENTE"
+								},
+								{
+									"key": "urgencia",
+									"value": "ALTA"
+								},
+								{
+									"key": "assigned_sector",
+									"value": "Mantenimiento"
+								},
+								{
+									"key": "orderBy",
+									"value": "urgencia"
+								},
+								{
+									"key": "order",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Filtros complejos: reportes PENDIENTES de ALTA urgencia del sector Mantenimiento"
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Report to Authority",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_reporte\": \"{{last_report_id}}\",\n  \"assigned_to\": \"{{authority_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/assign",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"assign"
+							]
+						},
+						"description": "Asignar reporte manualmente a una autoridad específica (solo admin)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Any Report Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_reporte\": \"{{last_report_id}}\",\n  \"estado\": \"RESUELTO\",\n  \"comentario\": \"Resuelto por administración\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reports/update-status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"update-status"
+							]
+						},
+						"description": "Admin puede actualizar el estado de cualquier reporte"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para administradores (acceso total, asignación manual, vista completa)"
+		},
+		{
+			"name": "🔍 Shared - Consultas Generales",
+			"item": [
+				{
+					"name": "Get Report Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/{{last_report_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"{{last_report_id}}"
+							]
+						},
+						"description": "Obtener detalle completo de un reporte específico.\n\nValidación por rol:\n- Student: solo puede ver sus propios reportes\n- Authority: solo reportes de su sector\n- Admin: puede ver cualquier reporte"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Places",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/places",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"places"
+							]
+						},
+						"description": "Obtener lista completa de lugares disponibles para reportar (cualquier rol autenticado)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Places (filtered by type)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/places?type=baño",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"places"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "baño"
+								}
+							]
+						},
+						"description": "Filtrar lugares por tipo (baño, aula, laboratorio, etc.)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Places (filtered by tower)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/places?tower=T1&floor=3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"places"
+							],
+							"query": [
+								{
+									"key": "tower",
+									"value": "T1"
+								},
+								{
+									"key": "floor",
+									"value": "3"
+								}
+							]
+						},
+						"description": "Filtrar lugares por torre y piso"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints compartidos por todos los roles (detalle de reporte, listado de lugares)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script global pre-request",
+					"console.log('🚀 Request iniciado:', pm.info.requestName);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Tests globales",
+					"pm.test('Status code válido', function () {",
+					"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204, 400, 401, 403, 404, 500]);",
+					"});",
+					"",
+					"pm.test('Response time menor a 5s', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"if (pm.response.code === 200 || pm.response.code === 201) {",
+					"    pm.test('Response tiene formato JSON', function () {",
+					"        pm.response.to.be.json;",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://YOUR-API-ID.execute-api.us-east-1.amazonaws.com/dev",
+			"type": "string"
+		},
+		{
+			"key": "ws_url",
+			"value": "wss://YOUR-WS-ID.execute-api.us-east-1.amazonaws.com/dev",
+			"type": "string"
+		},
+		{
+			"key": "student_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "authority_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "last_report_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "student_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "authority_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

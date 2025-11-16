@@ -173,7 +173,7 @@ def validate_token(token: str) -> Dict:
   "created_at": "ISO timestamp",
   "updated_at": "ISO timestamp",
   "resolved_at": "ISO timestamp|null",
-  "image_url": "s3://bucket/key|null"
+  "image_url": "https://bucket.s3.amazonaws.com/reports/uuid.jpg?X-Amz-..." // URL HTTP firmada (expira en 1h)
 }
 ```
 

@@ -10,6 +10,7 @@ from boto3.dynamodb.conditions import Attr
 from utils.jwt_validator import validate_token, extract_token_from_event, create_response
 from utils.pagination import paginate_results, extract_pagination_params
 from utils.filters import apply_filters, apply_text_search, sort_items, extract_filter_params, extract_sort_params
+from utils.s3_helper import add_image_urls_to_reports
 
 dynamodb = boto3.resource('dynamodb')
 reports_table = dynamodb.Table('t_reportes')
@@ -149,6 +150,9 @@ def handler(event, context):
                 report['assigned_name'] = assigned_dict.get(report['assigned_to'], 'Desconocido')
             
             enriched_reports.append(report)
+        
+        # Convertir S3 URIs a URLs HTTP firmadas
+        enriched_reports = add_image_urls_to_reports(enriched_reports)
         
         # 11. Aplicar paginación manual
         paginated_result = paginate_results(enriched_reports, page, size)

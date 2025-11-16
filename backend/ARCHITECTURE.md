@@ -134,7 +134,7 @@ Basado en el diagrama de Eraser proporcionado, se implementaron todos los compon
   "created_at": "ISO8601",
   "updated_at": "ISO8601",
   "resolved_at": "ISO8601|null",
-  "image_url": "s3://bucket/path"
+  "image_url": "https://bucket.s3.amazonaws.com/reports/uuid.jpg?X-Amz-Algorithm=..." // Pre-signed URL
 }
 ```
 

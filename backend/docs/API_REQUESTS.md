@@ -510,7 +510,7 @@ Las notificaciones se envían automáticamente cuando:
   "created_at": "iso_timestamp",
   "updated_at": "iso_timestamp",
   "resolved_at": "iso_timestamp | null",
-  "image_url": "s3://bucket/key | null"
+  "image_url": "https://bucket.s3.amazonaws.com/reports/uuid.jpg?X-Amz-..." // Pre-signed URL válida 1 hora
 }
 ```
 

@@ -1,5 +1,4 @@
 import type { DataStudent, UserResponse } from "../user";
-import { register } from '../../services/auth/index';
 
 export interface AuthContextType {
     token: string | null;
@@ -15,8 +14,12 @@ export interface AuthRequest {
 }
 
 export interface AuthResponse {
+    // Mensaje de la API (p. ej. 'Login successful')
+    message: string;
+    // JWT de autenticación
     token: string;
-    user_data: UserResponse;
+    // Datos del usuario autenticado. Se extiende con `data_student` cuando aplica.
+    user: UserResponse & { data_student?: DataStudent };
 }
 
 

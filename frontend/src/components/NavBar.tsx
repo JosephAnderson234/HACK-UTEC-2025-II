@@ -41,30 +41,27 @@ export default function NavBar() {
     const username = claims?.email ? String(claims.email).split('@')[0] : undefined;
 
     return (
-        <header className="bg-gray-900 text-white p-4 flex justify-between items-center shadow-md">
-            <div className="flex items-center space-x-3">
-                <img src={utecLogo} alt="UTEC Logo" className="h-10 w-auto rounded" />
-                <span className="text-lg font-semibold">Sistema de Reportes UTEC</span>
-            </div>
-
-            <div className="flex flex-col items-end space-y-2">
-                {token && (
-                    <div className="text-sm font-medium">
-                        Bienvenido{username ? `, ${username}` : ''}
+        <header className="bg-(--color-tertiary) text-(--color-primary) p-4 shadow-md">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <img src={utecLogo} alt="UTEC Logo" className="h-10 w-auto rounded" />
+                    <div>
+                        <div className="text-lg font-semibold">Sistema de Reportes UTEC</div>
+                        <div className="text-xs text-(--color-primary) opacity-80">Plataforma de gestión y notificación de reportes</div>
                     </div>
-                )}
+                </div>
 
-                <nav aria-label="Main navigation">
-                    <ul className="flex space-x-4">
+                <nav aria-label="Main navigation" className="flex-1 mx-6">
+                    <ul className="flex flex-wrap justify-center items-center gap-2">
                         {token && links.length > 0 ? (
                             links.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         to={link.href}
-                                        className={`px-3 py-2 rounded transition-colors ${location.pathname === link.href
-                                                ? 'bg-blue-500 text-white font-semibold'
-                                                : 'text-white hover:bg-gray-700'
-                                            }`}
+                                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === link.href
+                                            ? 'bg-(--color-secondary) text-(--color-primary) shadow'
+                                            : 'text-(--color-primary) hover:bg-(--color-secondary) hover:text-(--color-primary)'
+                                        }`}
                                     >
                                         {link.name}
                                     </Link>
@@ -76,17 +73,17 @@ export default function NavBar() {
                                     <li>
                                         <Link
                                             to="/login"
-                                            className="px-3 py-2 rounded text-white hover:bg-gray-700 transition-colors"
+                                            className="px-3 py-2 rounded-md text-sm font-medium border border-(--color-secondary) text-(--color-primary) hover:bg-(--color-secondary) hover:text-(--color-primary) transition-colors"
                                         >
-                                            Login
+                                            Iniciar sesión
                                         </Link>
                                     </li>
                                     <li>
                                         <Link
                                             to="/register"
-                                            className="px-3 py-2 rounded text-white hover:bg-gray-700 transition-colors"
+                                            className="px-3 py-2 rounded-md text-sm font-medium bg-(--color-secondary) text-(--color-primary) hover:opacity-90 transition-colors"
                                         >
-                                            Register
+                                            Registrar (estudiantes)
                                         </Link>
                                     </li>
                                 </>
@@ -94,6 +91,18 @@ export default function NavBar() {
                         )}
                     </ul>
                 </nav>
+
+                <div className="flex items-center gap-3">
+                    {token ? (
+                        <div className="flex items-center gap-3">
+                            <div className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-(--color-primary) text-(--color-tertiary) font-semibold">{username ? username[0].toUpperCase() : '?'}</div>
+                            <div className="flex flex-col text-right">
+                                <span className="text-sm font-medium">{username ?? 'Usuario'}</span>
+                                {claims?.role && <span className="text-xs px-2 py-0.5 rounded-full bg-(--color-primary) text-(--color-tertiary) opacity-90">{claims.role}</span>}
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
             </div>
         </header>
     );

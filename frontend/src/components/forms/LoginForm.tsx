@@ -2,17 +2,16 @@ import type { AuthRegisterRequest } from "@/interfaces/context/AuthContext";
 import { useForm } from "react-hook-form"
 import LogoUtec from "@/assets/UTEC-Logo.jpg";
 import { Link, useNavigate } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
 
 export default function LoginForm() {
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthRegisterRequest>();
     const navigate = useNavigate();
-
+    const { login } = useAuth();
     const onSubmit = async (data: AuthRegisterRequest) => {
-        console.log(data);
-        // Aquí llamarías a tu servicio de autenticación y en caso de éxito rediriges.
-        // await authService.login(data)
-        navigate('/dashboard');
+        login(data);
+        navigate('/');
     }
 
     return (

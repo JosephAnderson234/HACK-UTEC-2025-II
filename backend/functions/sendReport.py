@@ -136,13 +136,19 @@ def handler(event, context):
             'descripcion': body['descripcion'],
             'fecha_hora': timestamp,
             'urgencia': body['urgencia'],
+            'urgencia_original': body['urgencia'],
+            'urgencia_clasificada': body['urgencia'],
             'estado': 'PENDIENTE',
             'author_id': user_id,
             'assigned_to': None,
             'assigned_sector': assigned_sector,
             'created_at': timestamp,
             'updated_at': timestamp,
-            'resolved_at': None
+            'resolved_at': None,
+            'clasificacion_auto': False,
+            'classification_score': None,
+            'notification_sent': False,
+            'notification_sent_at': None
         }
         
         if image_url:
@@ -184,6 +190,10 @@ def handler(event, context):
                 'id_reporte': report_id,
                 'estado': 'PENDIENTE',
                 'urgencia': body['urgencia'],
+                'urgencia_original': body['urgencia'],
+                'urgencia_clasificada': body['urgencia'],
+                'clasificacion_auto': False,
+                'classification_score': None,
                 'lugar': report_item['lugar'],
                 'created_at': timestamp
             }

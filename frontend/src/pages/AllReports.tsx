@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavegationPaginated } from "@/components/Navegation";
 import { getReports } from "@/services/report/getReports";
 import type { GetReportsResponse } from "@/interfaces/api";
 import { SearchBar } from '../components/Navegation';
 import { ReportCard } from "@/components/cards/ReportCards";
+import useDebounce from "@/hooks/useDebounce";
 
 
 export default function AllReportsPage (){
@@ -11,7 +12,9 @@ export default function AllReportsPage (){
     const [page, setPage] = useState(0);
     const size = 10;
     const [term, setTerm] = useState<string>("");
+    const debouncedTerm = useDebounce(term, 500);
     const [currentData, setCurrentData] = useState<GetReportsResponse>();
+    const requestSeqRef = useRef(0);
 
     const handleNextPage = () => {
         if (currentData?.pagination.has_next) {
@@ -32,18 +35,26 @@ export default function AllReportsPage (){
 
 
     useEffect(() => {
+        let isActive = true;
+        const seq = ++requestSeqRef.current;
+
         const fetchReports = async () => {
             try {
-                const data = await getReports(term, page, size);
+                const data = await getReports(debouncedTerm, page, size);
+                // ignora respuestas antiguas o efecto desmontado
+                if (!isActive || seq !== requestSeqRef.current) return;
                 setCurrentData(data);
-                console.log(data);
             } catch (error) {
+                if (!isActive) return;
                 console.error("Error fetching reports:", error);
             }
         };
 
         fetchReports();
-    }, [page, term]);
+        return () => {
+            isActive = false;
+        };
+    }, [page, debouncedTerm]);
 
     return(
         <div>

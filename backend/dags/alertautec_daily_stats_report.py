@@ -5,7 +5,7 @@ from boto3.dynamodb.conditions import Attr
 import json
 
 AWS_REGION = "us-east-1"
-DYNAMO_TABLE = "Incidents"
+DYNAMO_TABLE = "t_reportes"
 S3_BUCKET_REPORTS = "alertautec-reports"
 # Cambia TU_ID_CUENTA por tu ID de cuenta AWS
 SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:197345439522:AlertaUTECNotificaciones"
@@ -38,22 +38,73 @@ def daily_stats_report():
             "generated_at": datetime.utcnow().isoformat(),
             "period": "last_24_hours",
             "total_incidents": len(incidents),
-            "by_type": {},
-            "by_location": {},
-            "by_status": {},
-            "by_urgency": {},
+            "by_urgency": {
+                "BAJA": 0,
+                "MEDIA": 0,
+                "ALTA": 0,
+            },
+            "by_estado": {
+                "PENDIENTE": 0,
+                "ATENDIENDO": 0,
+                "RESUELTO": 0,
+            },
+            "by_sector": {},
+            "classification_stats": {
+                "auto_classified": 0,
+                "manual_classified": 0,
+                "avg_confidence_score": 0.0,
+            },
+            "urgency_reclassification": {
+                "total_changes": 0,
+                "elevated": 0,  # urgencia_original < urgencia_clasificada
+                "reduced": 0,   # urgencia_original > urgencia_clasificada
+            },
         }
 
-        for inc in incidents:
-            t = inc.get("type", "desconocido")
-            loc = inc.get("location", "desconocida")
-            status = inc.get("status", "desconocido")
-            urgency = inc.get("urgency", "desconocida")
+        total_score = 0.0
+        classified_count = 0
 
-            stats["by_type"][t] = stats["by_type"].get(t, 0) + 1
-            stats["by_location"][loc] = stats["by_location"].get(loc, 0) + 1
-            stats["by_status"][status] = stats["by_status"].get(status, 0) + 1
-            stats["by_urgency"][urgency] = stats["by_urgency"].get(urgency, 0) + 1
+        for inc in incidents:
+            # Contadores por urgencia clasificada
+            urgencia = inc.get("urgencia_clasificada", inc.get("urgencia", "BAJA"))
+            stats["by_urgency"][urgencia] = stats["by_urgency"].get(urgencia, 0) + 1
+
+            # Contadores por estado
+            estado = inc.get("estado", "PENDIENTE")
+            stats["by_estado"][estado] = stats["by_estado"].get(estado, 0) + 1
+
+            # Contadores por sector
+            sector = inc.get("assigned_sector", "Sin asignar")
+            stats["by_sector"][sector] = stats["by_sector"].get(sector, 0) + 1
+
+            # Estadísticas de clasificación automática
+            if inc.get("clasificacion_auto"):
+                stats["classification_stats"]["auto_classified"] += 1
+                score = inc.get("classification_score", 0.0)
+                total_score += score
+                classified_count += 1
+
+                # Contar cambios de urgencia
+                urgencia_original = inc.get("urgencia_original", "BAJA")
+                urgencia_clasificada = inc.get("urgencia_clasificada", "BAJA")
+                
+                if urgencia_original != urgencia_clasificada:
+                    stats["urgency_reclassification"]["total_changes"] += 1
+                    
+                    # Comparar niveles
+                    urgency_levels = {"BAJA": 1, "MEDIA": 2, "ALTA": 3}
+                    if urgency_levels.get(urgencia_clasificada, 1) > urgency_levels.get(urgencia_original, 1):
+                        stats["urgency_reclassification"]["elevated"] += 1
+                    else:
+                        stats["urgency_reclassification"]["reduced"] += 1
+            else:
+                stats["classification_stats"]["manual_classified"] += 1
+
+        # Calcular score promedio
+        if classified_count > 0:
+            stats["classification_stats"]["avg_confidence_score"] = round(
+                total_score / classified_count, 2
+            )
 
         return stats
 

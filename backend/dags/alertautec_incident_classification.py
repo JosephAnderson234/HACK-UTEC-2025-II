@@ -5,7 +5,7 @@ from boto3.dynamodb.conditions import Attr
 import json
 
 AWS_REGION = "us-east-1"
-DYNAMO_TABLE = "Incidents"
+DYNAMO_TABLE = "t_reportes"
 # Cambia TU_ID_CUENTA por tu ID de cuenta AWS
 SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:197345439522:AlertaUTECNotificaciones"
 
@@ -25,10 +25,10 @@ def incident_classification_and_notifications():
 
         resp = table.scan(
             FilterExpression=(
-                Attr("status").is_in(["pendiente", "en_atencion"])
+                Attr("estado").is_in(["PENDIENTE", "ATENDIENDO"])
                 & (
-                    Attr("classified").not_exists()
-                    | Attr("classified").eq(False)
+                    Attr("clasificacion_auto").not_exists()
+                    | Attr("clasificacion_auto").eq(False)
                 )
             )
         )
@@ -37,30 +37,55 @@ def incident_classification_and_notifications():
     @task()
     def classify_incidents(incidents):
         for inc in incidents:
-            incident_type = (inc.get("type") or "").lower()
-            urgency = (inc.get("urgency") or "").lower()
-            location = (inc.get("location") or "").lower()
-            description = (inc.get("description") or "").lower()
+            tipo_lugar = (inc.get("lugar", {}).get("type") or "").lower()
+            urgencia_original = (inc.get("urgencia") or "BAJA").upper()
+            descripcion = (inc.get("descripcion") or "").lower()
+            assigned_sector = (inc.get("assigned_sector") or "").lower()
 
-            # Área responsable (reglas simples)
-            if "baño" in location or "fuga" in description or "agua" in description:
-                inc["area_responsible"] = "Infraestructura"
-            elif "robo" in description or "violencia" in description or "seguridad" in incident_type:
-                inc["area_responsible"] = "Seguridad"
-            elif "sistema" in description or "wifi" in description or "computo" in description:
-                inc["area_responsible"] = "Soporte TI"
+            # Clasificación de urgencia basada en heurísticas
+            score = 0.0
+            urgencia_clasificada = urgencia_original
+
+            # Factores que aumentan la urgencia
+            high_risk_keywords = ["robo", "violencia", "seguridad", "fuego", "incendio", "emergencia"]
+            medium_risk_keywords = ["fuga", "agua", "electricidad", "daño", "roto", "sistema"]
+            
+            # Análisis de descripción
+            for keyword in high_risk_keywords:
+                if keyword in descripcion:
+                    score += 0.3
+                    
+            for keyword in medium_risk_keywords:
+                if keyword in descripcion:
+                    score += 0.15
+
+            # Análisis por tipo de lugar
+            if tipo_lugar in ["baño", "cocina"]:
+                score += 0.1
+            elif tipo_lugar in ["entrada", "estacionamiento"]:
+                score += 0.15
+
+            # Ajustar score según urgencia original
+            if urgencia_original == "ALTA":
+                score = min(1.0, score + 0.4)
+            elif urgencia_original == "MEDIA":
+                score = min(1.0, score + 0.2)
+
+            # Clasificar según score
+            if score >= 0.7:
+                urgencia_clasificada = "ALTA"
+            elif score >= 0.4:
+                urgencia_clasificada = "MEDIA"
             else:
-                inc["area_responsible"] = "Mesa de ayuda"
+                urgencia_clasificada = "BAJA"
 
-            # Nivel de riesgo
-            if urgency == "alta":
-                inc["risk_level"] = "critico"
-            elif urgency == "media":
-                inc["risk_level"] = "moderado"
-            else:
-                inc["risk_level"] = "bajo"
-
-            inc["classified"] = True
+            # Guardar resultados
+            inc["urgencia_original"] = urgencia_original
+            inc["urgencia_clasificada"] = urgencia_clasificada
+            inc["clasificacion_auto"] = True
+            inc["classification_score"] = round(score, 2)
+            inc["notification_sent"] = False
+            inc["notification_sent_at"] = None
 
         return incidents
 
@@ -70,49 +95,79 @@ def incident_classification_and_notifications():
         table = dynamodb.Table(DYNAMO_TABLE)
 
         for inc in incidents:
-            table.update_item(
-                Key={"incident_id": inc["incident_id"]},
-                UpdateExpression=(
-                    "SET area_responsible = :area, "
-                    "risk_level = :risk, "
-                    "classified = :classified"
-                ),
-                ExpressionAttributeValues={
-                    ":area": inc.get("area_responsible", "Pendiente"),
-                    ":risk": inc.get("risk_level", "desconocido"),
-                    ":classified": True,
-                },
+            update_expr = (
+                "SET urgencia_original = :urgencia_original, "
+                "urgencia_clasificada = :urgencia_clasificada, "
+                "clasificacion_auto = :clasificacion_auto, "
+                "classification_score = :score, "
+                "updated_at = :updated_at"
             )
+            
+            expr_values = {
+                ":urgencia_original": inc.get("urgencia_original"),
+                ":urgencia_clasificada": inc.get("urgencia_clasificada"),
+                ":clasificacion_auto": True,
+                ":score": inc.get("classification_score"),
+                ":updated_at": datetime.utcnow().isoformat(),
+            }
+
+            try:
+                table.update_item(
+                    Key={"id_reporte": inc["id_reporte"]},
+                    UpdateExpression=update_expr,
+                    ExpressionAttributeValues=expr_values,
+                )
+            except Exception as e:
+                print(f"Error updating incident {inc['id_reporte']}: {str(e)}")
+        
         return incidents
 
     @task()
     def notify_responsibles(incidents):
+        dynamodb = boto3.resource("dynamodb", region_name=AWS_REGION)
+        table = dynamodb.Table(DYNAMO_TABLE)
         sns = boto3.client("sns", region_name=AWS_REGION)
 
         for inc in incidents:
-            risk = inc.get("risk_level", "bajo")
-            urgency = (inc.get("urgency") or "").lower()
+            urgencia_clasificada = inc.get("urgencia_clasificada", "BAJA")
+            score = inc.get("classification_score", 0.0)
+            
+            # Solo notificar si la clasificación cambió significativamente
+            # o si tiene alta urgencia
+            should_notify = (urgencia_clasificada == "ALTA" or score >= 0.7)
 
-            # Solo notificar los importantes
-            if risk != "critico" and urgency != "alta":
-                continue
+            if should_notify and not inc.get("notification_sent"):
+                message = {
+                    "id_reporte": inc["id_reporte"],
+                    "urgencia_original": inc.get("urgencia_original"),
+                    "urgencia_clasificada": urgencia_clasificada,
+                    "classification_score": score,
+                    "descripcion": inc.get("descripcion"),
+                    "lugar": inc.get("lugar"),
+                    "assigned_sector": inc.get("assigned_sector"),
+                    "estado": inc.get("estado"),
+                    "created_at": inc.get("created_at"),
+                    "clasificacion_auto": True,
+                }
 
-            message = {
-                "incident_id": inc["incident_id"],
-                "type": inc.get("type"),
-                "urgency": inc.get("urgency"),
-                "location": inc.get("location"),
-                "area_responsible": inc.get("area_responsible"),
-                "risk_level": risk,
-                "status": inc.get("status"),
-                "created_at": inc.get("created_at"),
-            }
-
-            sns.publish(
-                TopicArn=SNS_TOPIC_ARN,
-                Subject=f"[AlertaUTEC] Nuevo incidente crítico - {inc['incident_id']}",
-                Message=json.dumps(message),
-            )
+                try:
+                    sns.publish(
+                        TopicArn=SNS_TOPIC_ARN,
+                        Subject=f"[AlertaUTEC] Incidente clasificado - {urgencia_clasificada}",
+                        Message=json.dumps(message),
+                    )
+                    
+                    # Marcar notificación como enviada
+                    table.update_item(
+                        Key={"id_reporte": inc["id_reporte"]},
+                        UpdateExpression="SET notification_sent = :sent, notification_sent_at = :sent_at",
+                        ExpressionAttributeValues={
+                            ":sent": True,
+                            ":sent_at": datetime.utcnow().isoformat(),
+                        },
+                    )
+                except Exception as e:
+                    print(f"Error notifying for incident {inc['id_reporte']}: {str(e)}")
 
     incidents = get_unclassified_incidents()
     classified = classify_incidents(incidents)

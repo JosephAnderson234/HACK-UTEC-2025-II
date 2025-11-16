@@ -142,6 +142,17 @@ functions:
         cors: true
 
   # ========================================
+  # GESTIÓN DE USUARIOS (1 nueva función)
+  # ========================================
+  getUsers:
+    handler: functions.getUsers.handler
+    events:
+    - http:
+        path: users
+        method: get
+        cors: true
+
+  # ========================================
   # WEBSOCKET (2 funciones)
   # ========================================
   onConnect:

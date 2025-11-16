@@ -35,8 +35,9 @@ def handler(event, context):
         role = payload['user_data']['role']
         user_data = payload['user_data']
         
-        # 3. Todos los roles pueden ver reportes (transparencia total)
-        # No hay restricción de roles
+        # 3. Verificar que sea authority o admin
+        if role not in ['authority', 'admin']:
+            return create_response(403, {'error': 'Only authorities and admins can access this endpoint'})
         
         # 4. Extraer parámetros de query
         query_params = event.get('queryStringParameters') or {}

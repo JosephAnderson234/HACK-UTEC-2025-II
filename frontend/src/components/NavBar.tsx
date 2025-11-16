@@ -26,7 +26,7 @@ const linksByRole: Record<Role, { name: string; href: string }[]> = {
 
 export default function NavBar() {
     const location = useLocation();
-    const { token } = useAuth();
+    const { token, logout } = useAuth();
     let links: { name: string; href: string }[] = [];
     const claims = token ? (decodeJWT(token) as { role?: Role; email?: string } | null) : null;
     if (claims?.role && linksByRole[claims.role]) {
@@ -42,7 +42,7 @@ export default function NavBar() {
 
     return (
         <header className="bg-(--color-tertiary) text-(--color-primary) p-4 shadow-md">
-            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <img src={utecLogo} alt="UTEC Logo" className="h-10 w-auto rounded" />
                     <div>
@@ -52,9 +52,9 @@ export default function NavBar() {
                 </div>
 
                 <nav aria-label="Main navigation" className="flex-1 mx-6">
-                    <ul className="flex flex-wrap justify-center items-center gap-2">
-                        {token && links.length > 0 ? (
-                            links.map((link) => (
+                    {token && links.length > 0 ? (
+                        <ul className="flex flex-wrap justify-center items-center gap-2">
+                            {links.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         to={link.href}
@@ -66,30 +66,14 @@ export default function NavBar() {
                                         {link.name}
                                     </Link>
                                 </li>
-                            ))
-                        ) : (
-                            !token && (
-                                <>
-                                    <li>
-                                        <Link
-                                            to="/login"
-                                            className="px-3 py-2 rounded-md text-sm font-medium border border-(--color-secondary) text-(--color-primary) hover:bg-(--color-secondary) hover:text-(--color-primary) transition-colors"
-                                        >
-                                            Iniciar sesión
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="/register"
-                                            className="px-3 py-2 rounded-md text-sm font-medium bg-(--color-secondary) text-(--color-primary) hover:opacity-90 transition-colors"
-                                        >
-                                            Registrar (estudiantes)
-                                        </Link>
-                                    </li>
-                                </>
-                            )
-                        )}
-                    </ul>
+                            ))}
+                        </ul>
+                    ) : (
+                        // cuando no está loggeado mostramos un pequeño tagline centrado en pantallas md+
+                        <div className="hidden md:flex justify-center w-full">
+                            <span className="text-sm text-(--color-primary) opacity-90">Accede para crear y gestionar reportes</span>
+                        </div>
+                    )}
                 </nav>
 
                 <div className="flex items-center gap-3">
@@ -100,8 +84,27 @@ export default function NavBar() {
                                 <span className="text-sm font-medium">{username ?? 'Usuario'}</span>
                                 {claims?.role && <span className="text-xs px-2 py-0.5 rounded-full bg-(--color-primary) text-(--color-tertiary) opacity-90">{claims.role}</span>}
                             </div>
+                            <button
+                                onClick={logout}
+                                className="ml-4 px-3 py-2 rounded-md text-sm font-medium bg-(--color-secondary) text-(--color-primary) hover:opacity-90 transition-colors"
+                            >Cerrar sesión</button>
                         </div>
-                    ) : null}
+                    ) : (
+                        <div className="flex flex-col sm:flex-row items-center gap-2">
+                            <Link
+                                to="/login"
+                                className="w-full sm:w-auto text-center px-3 py-2 rounded-md text-sm font-medium border border-(--color-secondary) text-(--color-primary) hover:bg-(--color-secondary) hover:text-(--color-primary) transition-colors"
+                            >
+                                Iniciar sesión
+                            </Link>
+                            <Link
+                                to="/register"
+                                className="w-full sm:w-auto text-center px-3 py-2 rounded-md text-sm font-medium bg-(--color-secondary) text-(--color-primary) hover:opacity-90 transition-colors"
+                            >
+                                Registrar (estudiantes)
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>

@@ -5,12 +5,15 @@ import AuthContextProvider from './context/AuthProvider.tsx'
 import router from './router/routes.tsx'
 import { RouterProvider } from 'react-router'
 import { NotificationProvider } from './context/NotificationProvider';
+import { WebSocketProvider } from './context/WebSocketProvider.tsx';
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<AuthContextProvider>
 			<NotificationProvider>
-				<RouterProvider router={router} />
+				<WebSocketProvider>
+					<RouterProvider router={router} />
+				</WebSocketProvider>
 			</NotificationProvider>
 		</AuthContextProvider>
 	</StrictMode>,

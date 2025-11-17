@@ -33,14 +33,14 @@ export const predictIncident = async (request: PredictIncidentRequest): Promise<
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(request)
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({ 
-            error: 'Error al predecir incidente' 
+        const error = await response.json().catch(() => ({
+            error: 'Error al predecir incidente'
         }));
         throw new Error(error.error || error.detalle || 'Error al predecir incidente');
     }

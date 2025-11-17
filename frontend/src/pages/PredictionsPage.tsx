@@ -110,7 +110,7 @@ export default function PredictionsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -127,7 +127,7 @@ export default function PredictionsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Formulario de Predicción */}
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                        <div className="bg-linear-to-r from-blue-600 to-purple-600 px-6 py-4">
                             <div className="flex items-center">
                                 <Sparkles className="h-6 w-6 text-white mr-2" />
                                 <h2 className="text-xl font-semibold text-white">Parámetros de Predicción</h2>

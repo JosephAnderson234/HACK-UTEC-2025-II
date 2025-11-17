@@ -55,14 +55,6 @@ Incluye un backend serverless desplegable en AWS y un frontend moderno en React 
   - `PyJWT`
   - `requests`
 
-Documentación interna adicional:
-- `backend/README.md`
-- `backend/ARCHITECTURE.md`
-- `backend/CONFIGURATION.md`
-- `backend/DEPLOYMENT.md`
-- `backend/TESTING.md`
-- `backend/docs/ACCESS_CONTROL.md`
-- `backend/docs/API_REQUESTS.md`
 
 ### Frontend (`/frontend`)
 - **React 19**
@@ -101,8 +93,14 @@ Entre ellos se incluye, por ejemplo:
 En la carpeta `frontend/` crear un archivo `.env` con, al menos:
 
 ```env
-VITE_API_URL_AUTH=https://TU_HTTP_API/dev/auth
-VITE_API_URL_WS=wss://TU_WS_API/dev
+VITE_API_URL_AUTH=
+VITE_API_URL_WS=
+VITE_API_URL_REPORTS=
+VITE_API_URL_PLACES=
+VITE_API_URL_USERS=
+VITE_API_URL_ADMIN=
+VITE_API_URL_STATS=
+VITE_API_URL_INCIDENTS=
 ```
 
 Estas variables son consumidas por:
@@ -110,6 +108,9 @@ Estas variables son consumidas por:
 - `src/utils/loaderEnv.ts`
 - `src/services/auth/index.ts`
 - Contexto/estado de autenticación (`AuthProvider`, `authStore`)
+
+
+>Importante, hay credenciales de prueba para que poblen sus tablas en dynamo db
 
 ---
 
@@ -182,20 +183,7 @@ Por defecto, Vite levantará la app en `http://localhost:5173` (o el puerto que 
 
 > Detalle fino de roles, permisos y rutas: ver `backend/docs/ACCESS_CONTROL.md` y `backend/docs/API_REQUESTS.md`.
 
----
 
-## 📚 Documentación Complementaria
-
-- **Arquitectura detallada del backend:** `backend/ARCHITECTURE.md`
-- **Configuración por entorno/stage:** `backend/CONFIGURATION.md`
-- **Guía de despliegue:** `backend/DEPLOYMENT.md`
-- **Testing y datos de prueba:** `backend/TESTING.md`
-- **Control de acceso y roles:** `backend/docs/ACCESS_CONTROL.md`
-- **Documentación de endpoints:** `backend/docs/API_REQUESTS.md`
-- **Frontend:** `frontend/README.md`  
-  (puede adaptarse para documentar pantallas y componentes concretos a medida que se implementen)
-
----
 
 ## 👥 Autores
 
@@ -205,6 +193,6 @@ Proyecto desarrollado como parte de cursos de la
 - **Bruno William García López**  
 - **Joel Modesto Cayllahua Hilario**
 - **Nombre**
-- **Nombre**
+- **Joseph Anderson Cose Rojas**
 
 ---

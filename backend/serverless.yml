@@ -174,6 +174,17 @@ functions:
         cors: true
 
   # ========================================
+  # AIRFLOW ANALYTICS (1 nueva función)
+  # ========================================
+  getAirflowAnalytics:
+    handler: functions.getAirflowAnalytics.handler
+    events:
+    - http:
+        path: reports/airflow/analytics
+        method: get
+        cors: true
+
+  # ========================================
   # WEBSOCKET (2 funciones)
   # ========================================
   onConnect:
@@ -214,7 +225,7 @@ functions:
           - utec-alerta.auth
           detail-type:
           - UserRegistered
-
+          
   predictIncident:
     handler: functions/predictIncident.handler
     events:

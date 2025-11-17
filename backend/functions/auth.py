@@ -9,6 +9,8 @@ from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
 ssm = boto3.client('ssm')
+events = boto3.client('events')
+sns = boto3.client('sns')
 
 # Cache para JWT_SECRET
 _jwt_secret_cache = None
@@ -103,10 +105,10 @@ def handler(event, context):
 
 
 def handle_register(body):
-    """Registra un nuevo usuario"""
+    """Registra un nuevo estudiante (siempre rol student)"""
     try:
         # Validar campos requeridos
-        required_fields = ['first_name', 'last_name', 'email', 'password', 'role', 'DNI', 'cellphone']
+        required_fields = ['first_name', 'last_name', 'email', 'password', 'DNI', 'cellphone']
         for field in required_fields:
             if field not in body:
                 return create_response(400, {'error': f'Missing required field: {field}'})
@@ -129,38 +131,70 @@ def handle_register(body):
         # Hash de la contraseña
         password_hash = hash_password(body['password'])
         
-        # Preparar item del usuario
+        # Preparar item del usuario (siempre estudiante)
         user_item = {
             'id': user_id,
             'first_name': body['first_name'],
             'last_name': body['last_name'],
             'email': body['email'],
-            'role': body['role'],
+            'role': 'student',
             'password': password_hash,
             'DNI': body['DNI'],
             'cellphone': body['cellphone'],
             'registration_date': datetime.utcnow().isoformat()
         }
         
-        # Agregar datos específicos según el rol
-        if body['role'] == 'student' and 'data_student' in body:
+        # Agregar datos específicos del estudiante si existen
+        if 'data_student' in body:
             user_item['data_student'] = body['data_student']
-        elif body['role'] == 'authority' and 'data_authority' in body:
-            user_item['data_authority'] = body['data_authority']
         
         # Guardar usuario
         table.put_item(Item=user_item)
         
+        # Auto-suscribir al usuario al Topic SNS para recibir emails de bienvenida
+        try:
+            sns_topic_arn = os.environ.get('SNS_TOPIC_ARN')
+            if sns_topic_arn:
+                sns.subscribe(
+                    TopicArn=sns_topic_arn,
+                    Protocol='email',
+                    Endpoint=body['email']
+                )
+                print(f"User {body['email']} auto-subscribed to SNS topic")
+        except Exception as e:
+            # No fallar el registro si la suscripción falla
+            print(f"Warning: Failed to subscribe user to SNS: {str(e)}")
+        
+        # Publicar evento de registro para enviar email de bienvenida
+        try:
+            events.put_events(
+                Entries=[{
+                    'Source': 'utec-alerta.auth',
+                    'DetailType': 'UserRegistered',
+                    'Detail': json.dumps({
+                        'user_id': user_id,
+                        'email': body['email'],
+                        'first_name': body['first_name'],
+                        'last_name': body['last_name'],
+                        'role': body['role']
+                    })
+                }]
+            )
+            print(f"UserRegistered event published for user {user_id}")
+        except Exception as e:
+            # No fallar el registro si el evento falla
+            print(f"Warning: Failed to publish UserRegistered event: {str(e)}")
+        
         # Generar JWT
-        token = generate_jwt(user_id, body['email'], body['role'])
+        token = generate_jwt(user_id, body['email'], 'student')
         
         return create_response(201, {
-            'message': 'User registered successfully',
+            'message': 'Student registered successfully',
             'token': token,
             'user': {
                 'id': user_id,
                 'email': body['email'],
-                'role': body['role'],
+                'role': 'student',
                 'first_name': body['first_name'],
                 'last_name': body['last_name']
             }

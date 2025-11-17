@@ -187,7 +187,7 @@ functions:
         route: $disconnect
 
   # ========================================
-  # NOTIFICACIONES (1 función)
+  # NOTIFICACIONES (2 funciones)
   # ========================================
   sendNotify:
     handler: functions.sendNotify.handler
@@ -199,11 +199,30 @@ functions:
           detail-type:
           - ReportCreated
           - StatusUpdated
+  
+  sendWelcomeEmail:
+    handler: functions.sendWelcomeEmail.handler
+    environment:
+      SNS_TOPIC_ARN: 
+        Ref: WelcomeEmailTopic
+    events:
+    - eventBridge:
+        pattern:
+          source:
+          - utec-alerta.auth
+          detail-type:
+          - UserRegistered
 
 resources:
 - ${file(./resources/dynamodb-tables.yml)}
 - ${file(./resources/s3.yml)}
 - ${file(./resources/parameter-store.yml)}
+- Resources:
+    WelcomeEmailTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:service}-${sls:stage}-welcome-email-topic
+        DisplayName: UTEC Alerta - Welcome Email Notifications
 
 custom:
   stage: ${sls:stage}

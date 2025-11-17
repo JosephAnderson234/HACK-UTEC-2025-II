@@ -9,6 +9,7 @@ from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
 ssm = boto3.client('ssm')
+events = boto3.client('events')
 
 # Cache para JWT_SECRET
 _jwt_secret_cache = None
@@ -148,6 +149,26 @@ def handle_register(body):
         
         # Guardar usuario
         table.put_item(Item=user_item)
+        
+        # Publicar evento de registro para enviar email de bienvenida
+        try:
+            events.put_events(
+                Entries=[{
+                    'Source': 'utec-alerta.auth',
+                    'DetailType': 'UserRegistered',
+                    'Detail': json.dumps({
+                        'user_id': user_id,
+                        'email': body['email'],
+                        'first_name': body['first_name'],
+                        'last_name': body['last_name'],
+                        'role': body['role']
+                    })
+                }]
+            )
+            print(f"UserRegistered event published for user {user_id}")
+        except Exception as e:
+            # No fallar el registro si el evento falla
+            print(f"Warning: Failed to publish UserRegistered event: {str(e)}")
         
         # Generar JWT
         token = generate_jwt(user_id, body['email'], 'student')

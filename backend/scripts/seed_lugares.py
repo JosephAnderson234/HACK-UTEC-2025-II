@@ -34,14 +34,14 @@ lugares = [
         "id": "550e8400-e29b-41d4-a716-446655440003",
         "name": "Laboratorio de Cómputo L201",
         "type": "laboratorio",
-        "tower": "T2",
+        "tower": "",
         "floor": 2
     },
     {
         "id": "550e8400-e29b-41d4-a716-446655440004",
         "name": "Auditorio Principal",
         "type": "auditorio",
-        "tower": "T3",
+        "tower": "",
         "floor": 1
     },
     {
@@ -69,14 +69,14 @@ lugares = [
         "id": "550e8400-e29b-41d4-a716-446655440008",
         "name": "Biblioteca Central",
         "type": "biblioteca",
-        "tower": "T4",
+        "tower": "",
         "floor": 2
     },
     {
         "id": "550e8400-e29b-41d4-a716-446655440009",
         "name": "Sala SUM",
         "type": "sala_sum",
-        "tower": "T2",
+        "tower": "",
         "floor": 3
     },
     {
@@ -88,8 +88,8 @@ lugares = [
     },
     {
         "id": "550e8400-e29b-41d4-a716-446655440011",
-        "name": "Jardín Norte",
-        "type": "jardin",
+        "name": "Zona verde, cerca a la losa deportiva",
+        "type": "zona_verde",
         "tower": "",
         "floor": 0
     },

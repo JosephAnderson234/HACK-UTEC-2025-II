@@ -1,7 +1,6 @@
 org: joelcayllahua
 service: utec-alerta
 
-
 provider:
   name: aws
   runtime: python3.12
@@ -16,15 +15,15 @@ provider:
 
 package:
   patterns:
-    - '!node_modules/**'
-    - '!.serverless/**'
-    - '!.git/**'
-    - '!scripts/**'
-    - '!*.md'
-    - 'functions/**'
-    - 'utils/**'
-    - 'jwt/**'
-    - 'PyJWT-*.dist-info/**'
+  - '!node_modules/**'
+  - '!.serverless/**'
+  - '!.git/**'
+  - '!scripts/**'
+  - '!*.md'
+  - 'functions/**'
+  - 'utils/**'
+  - 'jwt/**'
+  - 'PyJWT-*.dist-info/**'
 
 functions:
   # ========================================
@@ -37,7 +36,7 @@ functions:
         path: auth/register
         method: post
         cors: true
-  
+
   login:
     handler: functions.auth.handler
     events:
@@ -56,7 +55,7 @@ functions:
         path: reports/create
         method: post
         cors: true
-  
+
   updateStatus:
     handler: functions.updateStatus.handler
     events:
@@ -75,7 +74,7 @@ functions:
         path: reports/my-reports
         method: get
         cors: true
-  
+
   getReports:
     handler: functions.getReports.handler
     events:
@@ -83,7 +82,7 @@ functions:
         path: reports
         method: get
         cors: true
-  
+
   getReportDetail:
     handler: functions.getReportDetail.handler
     events:
@@ -95,7 +94,7 @@ functions:
           parameters:
             paths:
               id_reporte: true
-  
+
   getAssignedReports:
     handler: functions.getAssignedReports.handler
     events:
@@ -118,7 +117,7 @@ functions:
           parameters:
             paths:
               id_reporte: true
-  
+
   assignReport:
     handler: functions.assignReport.handler
     events:
@@ -143,7 +142,7 @@ functions:
         cors: true
 
   # ========================================
-  # GESTIÓN DE USUARIOS (1 nueva función)
+  # GESTIÓN DE USUARIOS (2 funciones)
   # ========================================
   getUsers:
     handler: functions.getUsers.handler
@@ -151,6 +150,14 @@ functions:
     - http:
         path: users
         method: get
+        cors: true
+
+  manageAuthorities:
+    handler: functions.manageAuthorities.handler
+    events:
+    - http:
+        path: admin/authorities
+        method: post
         cors: true
 
   # ========================================
@@ -172,15 +179,15 @@ functions:
     events:
     - websocket:
         route: $connect
-  
+
   onDisconnect:
     handler: functions.onDisconnect.handler
     events:
     - websocket:
         route: $disconnect
-  
+
   # ========================================
-  # NOTIFICACIONES (1 función)
+  # NOTIFICACIONES (2 funciones)
   # ========================================
   sendNotify:
     handler: functions.sendNotify.handler
@@ -192,11 +199,30 @@ functions:
           detail-type:
           - ReportCreated
           - StatusUpdated
+  
+  sendWelcomeEmail:
+    handler: functions.sendWelcomeEmail.handler
+    environment:
+      SNS_TOPIC_ARN: 
+        Ref: WelcomeEmailTopic
+    events:
+    - eventBridge:
+        pattern:
+          source:
+          - utec-alerta.auth
+          detail-type:
+          - UserRegistered
 
 resources:
 - ${file(./resources/dynamodb-tables.yml)}
 - ${file(./resources/s3.yml)}
 - ${file(./resources/parameter-store.yml)}
+- Resources:
+    WelcomeEmailTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:service}-${sls:stage}-welcome-email-topic
+        DisplayName: UTEC Alerta - Welcome Email Notifications
 
 custom:
   stage: ${sls:stage}

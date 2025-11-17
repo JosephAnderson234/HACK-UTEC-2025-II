@@ -12,6 +12,8 @@ import AllReportsPage from "@/pages/AllReports";
 import MyReportsPage from "@/pages/MyReports";
 import AssignedReportsPage from "@/pages/AssignedReportsPage";
 import AssignReportsPage from "@/pages/AssignRp";
+import PredictionsPage from "@/pages/PredictionsPage";
+import ManageUsers from "@/pages/ManageUsers";
 
 
 
@@ -64,6 +66,14 @@ const router = createBrowserRouter([
                     {
                         path:"report/:id/assign",
                         element: <AssignReportsPage/>
+                    },
+                    {
+                        path:"predictions",
+                        element: <PredictionsPage/>
+                    },
+                    {
+                        path:"admin/users",
+                        element: <ManageUsers/>
                     }
                 ]
             },

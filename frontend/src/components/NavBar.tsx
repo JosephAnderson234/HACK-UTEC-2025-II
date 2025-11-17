@@ -8,9 +8,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 const linksByRole: Record<Role, { name: string; href: string }[]> = {
     admin: [
         { name: 'Dashboard', href: '/dashboard' },
-        { name: 'Manage Users', href: '/admin/users' },
+        { name: 'Gestionar Autoridades', href: '/admin/users' },
         { name: 'All reports', href: '/report' },
         { name: 'Nuevo Reporte', href: '/report/new' },
+        { name: 'Nuevo Reporte', href: '/predictions' }
     ],
     authority: [
         { name: 'Dashboard', href: '/dashboard' },

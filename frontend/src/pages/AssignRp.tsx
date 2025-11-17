@@ -27,7 +27,7 @@ export default function AssignReportsPage() {
             try {
                 setIsLoading(true);
                 setError(null);
-                
+
                 if (!id) {
                     setError("ID de reporte no válido");
                     return;
@@ -40,13 +40,19 @@ export default function AssignReportsPage() {
                 ]);
 
                 setReport(reportData.report);
-                
-                if (authoritiesData.users.length === 0) {
-                    setError("No hay autoridades disponibles para asignar");
+
+                // Filtrar autoridades por el mismo sector del reporte
+                const reportSector = reportData.report.assigned_sector;
+                const authoritiesInSector = authoritiesData.users.filter(
+                    auth => auth.data_authority?.sector === reportSector
+                );
+
+                if (authoritiesInSector.length === 0) {
+                    setError(`No hay autoridades disponibles en el sector "${reportSector}"`);
                 }
-                
-                setAuthorities(authoritiesData.users);
-                setFilteredAuthorities(authoritiesData.users);
+
+                setAuthorities(authoritiesInSector);
+                setFilteredAuthorities(authoritiesInSector);
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : "Error al cargar datos";
                 setError(errorMessage);
@@ -81,11 +87,11 @@ export default function AssignReportsPage() {
 
         try {
             setIsAssigning(true);
-            
+
             const selectedAuth = authorities.find(auth => auth.id === selectedAuthority);
-            
+
             await assignReport(id, { assigned_to: selectedAuthority });
-            
+
             showNotification({
                 type: "success",
                 message: `Reporte asignado exitosamente a ${selectedAuth?.first_name} ${selectedAuth?.last_name}`
@@ -93,7 +99,7 @@ export default function AssignReportsPage() {
 
             // Esperar un momento antes de navegar para que el usuario vea la notificación
             setTimeout(() => {
-                navigate(`/reports/${id}`);
+                navigate(`/report/${id}`);
             }, 500);
         } catch (error) {
             showNotification({
@@ -145,7 +151,7 @@ export default function AssignReportsPage() {
                         {error ? "Por favor, intenta nuevamente." : "El reporte que buscas no existe."}
                     </p>
                     <button
-                        onClick={() => navigate('/reports')}
+                        onClick={() => navigate('/report')}
                         className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
                     >
                         Volver a reportes
@@ -188,6 +194,12 @@ export default function AssignReportsPage() {
                                     />
                                 </div>
                             )}
+
+                            {/*mapping sector */}
+                            <div>
+                                <p className="text-sm text-gray-500">Sector Asignado</p>
+                                <p className="font-medium text-gray-900">{report.assigned_sector || 'No asignado'}</p>
+                            </div>
 
                             {/* ID y Urgencia */}
                             <div className="flex items-center justify-between">
@@ -290,11 +302,10 @@ export default function AssignReportsPage() {
                                         <button
                                             key={authority.id}
                                             onClick={() => setSelectedAuthority(authority.id)}
-                                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                                                selectedAuthority === authority.id
+                                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${selectedAuthority === authority.id
                                                     ? 'border-blue-500 bg-blue-50'
                                                     : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                            }`}
+                                                }`}
                                         >
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
@@ -345,11 +356,10 @@ export default function AssignReportsPage() {
                                 <button
                                     onClick={handleAssign}
                                     disabled={!selectedAuthority || isAssigning || authorities.length === 0}
-                                    className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all ${
-                                        !selectedAuthority || isAssigning || authorities.length === 0
+                                    className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all ${!selectedAuthority || isAssigning || authorities.length === 0
                                             ? 'bg-gray-300 cursor-not-allowed'
                                             : 'bg-blue-600 hover:bg-blue-700 active:scale-95'
-                                    }`}
+                                        }`}
                                 >
                                     {isAssigning ? (
                                         <span className="flex items-center justify-center">

@@ -130,7 +130,7 @@ export default function ReportPage() {
                 {/* Header */}
                 <div className="mb-6">
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate("/report")}
                         className="text-blue-600 hover:text-blue-700 font-medium mb-2 inline-block"
                     >
                         ← Volver

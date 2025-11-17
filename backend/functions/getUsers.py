@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 from decimal import Decimal
-from utils.jwt_validator import validate_jwt
+from utils.jwt_validator import extract_token_from_event, validate_token
 
 dynamodb = boto3.resource('dynamodb')
 table_usuarios = dynamodb.Table('t_usuarios')
@@ -36,10 +36,23 @@ def handler(event, context):
     Roles permitidos: admin (principalmente), authority (ver su sector)
     """
     try:
-        # Validar JWT
-        claims = validate_jwt(event)
+        # Extraer y validar JWT
+        token = extract_token_from_event(event)
+        if not token:
+            return {
+                'statusCode': 401,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                'body': json.dumps({
+                    'error': 'Token de autenticación requerido'
+                })
+            }
+        
+        claims = validate_token(token)
         user_role = claims.get('role')
-        user_id = claims.get('user_id') or claims.get('sub')  # Probar ambos campos
+        user_id = claims.get('user_id')
         
         print(f"User role: {user_role}, User ID: {user_id}")  # Debug
         

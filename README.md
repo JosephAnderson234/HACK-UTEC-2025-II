@@ -204,7 +204,7 @@ Proyecto desarrollado como parte de cursos de la
 
 - **Bruno William García López**  
 - **Joel Modesto Cayllahua Hilario**
-- **Nombre**
+- **Leonardo Gabriel Sanchez Terrazos**
 - **Nombre**
 
 ---

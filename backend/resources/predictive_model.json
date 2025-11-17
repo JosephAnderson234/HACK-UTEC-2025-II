@@ -1,0 +1,240 @@
+{
+  "level1": {
+    "T1|aula|mañana": {
+      "RUIDO": 0.4,
+      "AGUA": 0.2,
+      "INFRAESTRUCTURA": 0.2,
+      "CLIMATIZACION": 0.2
+    },
+    "T1|aula|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "T1|aula|tarde": {
+      "LIMPIEZA": 0.3333333333333333,
+      "CLIMATIZACION": 0.3333333333333333,
+      "INFRAESTRUCTURA": 0.3333333333333333
+    },
+    "T1|baÃ±o|mañana": {
+      "AGUA": 1.0
+    },
+    "T1|baÃ±o|tarde": {
+      "LIMPIEZA": 1.0
+    },
+    "T1|entrada|mañana": {
+      "INFRAESTRUCTURA": 1.0
+    },
+    "T1|laboratorio|tarde": {
+      "ELECTRICO": 1.0
+    },
+    "T1|pasillo|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "T1|sala_sum|tarde": {
+      "INFRAESTRUCTURA": 1.0
+    },
+    "T2|aula|mañana": {
+      "INFRAESTRUCTURA": 0.5,
+      "AGUA": 0.5
+    },
+    "T2|aula|tarde": {
+      "ELECTRICO": 1.0
+    },
+    "T2|baÃ±o|mañana": {
+      "AGUA": 1.0
+    },
+    "T2|biblioteca|noche": {
+      "ELECTRICO": 1.0
+    },
+    "T2|biblioteca|tarde": {
+      "CLIMATIZACION": 1.0
+    },
+    "T2|cafeteria|tarde": {
+      "LIMPIEZA": 1.0
+    },
+    "T2|entrada|mañana": {
+      "LIMPIEZA": 1.0
+    },
+    "T2|entrada|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "T2|estacionamiento|mañana": {
+      "AGUA": 1.0
+    },
+    "T2|estacionamiento|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "T2|laboratorio|mañana": {
+      "CLIMATIZACION": 1.0
+    },
+    "T2|laboratorio|noche": {
+      "ELECTRICO": 1.0
+    },
+    "T2|laboratorio|tarde": {
+      "INFRAESTRUCTURA": 0.5,
+      "RUIDO": 0.5
+    },
+    "T3|auditorio|mañana": {
+      "INFRAESTRUCTURA": 1.0
+    },
+    "T3|auditorio|noche": {
+      "ELECTRICO": 0.5,
+      "CLIMATIZACION": 0.5
+    },
+    "T3|aula|mañana": {
+      "AGUA": 1.0
+    },
+    "T3|baÃ±o|noche": {
+      "ELECTRICO": 1.0
+    },
+    "T3|cafeteria|tarde": {
+      "RUIDO": 1.0
+    },
+    "T3|estacionamiento|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "T3|patio|tarde": {
+      "LIMPIEZA": 0.5,
+      "RUIDO": 0.5
+    }
+  },
+  "level2": {
+    "auditorio|mañana": {
+      "INFRAESTRUCTURA": 1.0
+    },
+    "auditorio|noche": {
+      "ELECTRICO": 0.5,
+      "CLIMATIZACION": 0.5
+    },
+    "aula|mañana": {
+      "AGUA": 0.375,
+      "INFRAESTRUCTURA": 0.25,
+      "RUIDO": 0.25,
+      "CLIMATIZACION": 0.125
+    },
+    "aula|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "aula|tarde": {
+      "ELECTRICO": 0.25,
+      "LIMPIEZA": 0.25,
+      "CLIMATIZACION": 0.25,
+      "INFRAESTRUCTURA": 0.25
+    },
+    "baÃ±o|mañana": {
+      "AGUA": 1.0
+    },
+    "baÃ±o|noche": {
+      "ELECTRICO": 1.0
+    },
+    "baÃ±o|tarde": {
+      "LIMPIEZA": 1.0
+    },
+    "biblioteca|noche": {
+      "ELECTRICO": 1.0
+    },
+    "biblioteca|tarde": {
+      "CLIMATIZACION": 1.0
+    },
+    "cafeteria|tarde": {
+      "LIMPIEZA": 0.5,
+      "RUIDO": 0.5
+    },
+    "entrada|mañana": {
+      "LIMPIEZA": 0.5,
+      "INFRAESTRUCTURA": 0.5
+    },
+    "entrada|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "estacionamiento|mañana": {
+      "AGUA": 1.0
+    },
+    "estacionamiento|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "laboratorio|mañana": {
+      "CLIMATIZACION": 1.0
+    },
+    "laboratorio|noche": {
+      "ELECTRICO": 1.0
+    },
+    "laboratorio|tarde": {
+      "ELECTRICO": 0.5,
+      "INFRAESTRUCTURA": 0.25,
+      "RUIDO": 0.25
+    },
+    "pasillo|noche": {
+      "SEGURIDAD": 1.0
+    },
+    "patio|tarde": {
+      "LIMPIEZA": 0.5,
+      "RUIDO": 0.5
+    },
+    "sala_sum|tarde": {
+      "INFRAESTRUCTURA": 1.0
+    }
+  },
+  "level3": {
+    "('auditorio',)": {
+      "ELECTRICO": 0.3333333333333333,
+      "INFRAESTRUCTURA": 0.3333333333333333,
+      "CLIMATIZACION": 0.3333333333333333
+    },
+    "('aula',)": {
+      "AGUA": 0.23076923076923078,
+      "INFRAESTRUCTURA": 0.23076923076923078,
+      "CLIMATIZACION": 0.15384615384615385,
+      "RUIDO": 0.15384615384615385,
+      "ELECTRICO": 0.07692307692307693,
+      "LIMPIEZA": 0.07692307692307693,
+      "SEGURIDAD": 0.07692307692307693
+    },
+    "('baÃ±o',)": {
+      "AGUA": 0.6,
+      "LIMPIEZA": 0.2,
+      "ELECTRICO": 0.2
+    },
+    "('biblioteca',)": {
+      "ELECTRICO": 0.5,
+      "CLIMATIZACION": 0.5
+    },
+    "('cafeteria',)": {
+      "LIMPIEZA": 0.5,
+      "RUIDO": 0.5
+    },
+    "('entrada',)": {
+      "LIMPIEZA": 0.3333333333333333,
+      "SEGURIDAD": 0.3333333333333333,
+      "INFRAESTRUCTURA": 0.3333333333333333
+    },
+    "('estacionamiento',)": {
+      "SEGURIDAD": 0.6666666666666666,
+      "AGUA": 0.3333333333333333
+    },
+    "('laboratorio',)": {
+      "ELECTRICO": 0.5,
+      "INFRAESTRUCTURA": 0.16666666666666666,
+      "CLIMATIZACION": 0.16666666666666666,
+      "RUIDO": 0.16666666666666666
+    },
+    "('pasillo',)": {
+      "SEGURIDAD": 1.0
+    },
+    "('patio',)": {
+      "LIMPIEZA": 0.5,
+      "RUIDO": 0.5
+    },
+    "('sala_sum',)": {
+      "INFRAESTRUCTURA": 1.0
+    }
+  },
+  "global": {
+    "AGUA": 0.17073170731707318,
+    "ELECTRICO": 0.17073170731707318,
+    "INFRAESTRUCTURA": 0.17073170731707318,
+    "LIMPIEZA": 0.12195121951219512,
+    "SEGURIDAD": 0.12195121951219512,
+    "CLIMATIZACION": 0.12195121951219512,
+    "RUIDO": 0.12195121951219512
+  }
+}

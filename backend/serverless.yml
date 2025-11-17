@@ -212,11 +212,11 @@ functions:
           detail-type:
           - ReportCreated
           - StatusUpdated
-  
+
   sendWelcomeEmail:
     handler: functions.sendWelcomeEmail.handler
     environment:
-      SNS_TOPIC_ARN: 
+      SNS_TOPIC_ARN:
         Ref: WelcomeEmailTopic
     events:
     - eventBridge:
@@ -225,13 +225,14 @@ functions:
           - utec-alerta.auth
           detail-type:
           - UserRegistered
-          
+
   predictIncident:
     handler: functions/predictIncident.handler
     events:
-      - http:
-          path: incidents/predict
-          method: post
+    - http:
+        path: incidents/predict
+        method: post
+        cors: true
     environment:
       PREDICTIVE_MODEL_BUCKET: ${self:provider.environment.BUCKET_INGESTA}
       PREDICTIVE_MODEL_KEY: ml/predictive_model.json

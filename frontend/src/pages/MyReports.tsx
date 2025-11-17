@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
 import { getMyReports } from "@/services/report/getMyReports";
 import type { Report, GetMyReportsParams } from "@/interfaces/api/reports";
 import type { ReportStatus, ReportUrgency } from "@/interfaces/api/common";
@@ -18,6 +19,7 @@ export default function MyReports() {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const { token, user } = useAuth();
     
     const [filters, setFilters] = useState({
         estado: "" as ReportStatus | "",
@@ -44,6 +46,18 @@ export default function MyReports() {
     useEffect(() => {
         fetchReports();
     }, [fetchReports]);
+
+    // If logged in but user does not have permission to view "My Reports", redirect
+    useEffect(() => {
+        // only act when token exists (route is protected) to avoid redirecting unauthenticated users
+        if (!token) return;
+        // if user role is not student, redirect to dashboard
+        if (!user || user.role !== 'student') {
+            navigate('/dashboard');
+            // optional: show a notification about insufficient permissions
+            showNotification({ message: 'No tienes permiso para ver esta página', type: 'error' });
+        }
+    }, [token, user, navigate, showNotification]);
 
     const getStatusColor = (estado: ReportStatus) => {
         switch (estado) {

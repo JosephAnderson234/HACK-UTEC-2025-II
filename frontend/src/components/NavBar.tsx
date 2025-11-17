@@ -3,7 +3,7 @@ import utecLogo from "@/assets/UTEC-Logo.jpg";
 import type { Role } from "@/interfaces/user";
 import useAuth from "@/hooks/useAuth";
 import { decodeJWT } from "@/utils/jwtDocoder";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const linksByRole: Record<Role, { name: string; href: string }[]> = {
     admin: [
@@ -15,7 +15,8 @@ const linksByRole: Record<Role, { name: string; href: string }[]> = {
     authority: [
         { name: 'Dashboard', href: '/dashboard' },
         { name: 'Nuevo Reporte', href: '/report/new' },
-        { name: 'All reports', href: '/report' }
+        { name: 'All reports', href: '/report' },
+        {name:"Mis Asignaciones", href:"/report/assigned"}
     ],
     student: [
         { name: 'Dashboard', href: '/dashboard' },
@@ -27,6 +28,7 @@ const linksByRole: Record<Role, { name: string; href: string }[]> = {
 export default function NavBar() {
     const location = useLocation();
     const { token, logout } = useAuth();
+    const navigate = useNavigate();
     let links: { name: string; href: string }[] = [];
     const claims = token ? (decodeJWT(token) as { role?: Role; email?: string } | null) : null;
     if (claims?.role && linksByRole[claims.role]) {
@@ -71,7 +73,7 @@ export default function NavBar() {
                     ) : (
                         // cuando no está loggeado mostramos un pequeño tagline centrado en pantallas md+
                         <div className="hidden md:flex justify-center w-full">
-                            <span className="text-sm text-(--color-primary) opacity-90">Accede para crear y gestionar reportes</span>
+                            <span className="text-sm text-(--color-primary) opacity-90"> </span>
                         </div>
                     )}
                 </nav>
@@ -85,7 +87,11 @@ export default function NavBar() {
                                 {claims?.role && <span className="text-xs px-2 py-0.5 rounded-full bg-(--color-primary) text-(--color-tertiary) opacity-90">{claims.role}</span>}
                             </div>
                             <button
-                                onClick={logout}
+                                onClick={() => {
+                                    logout();
+                                    // force navigate to home after logout to avoid staying on protected route
+                                    navigate('/');
+                                }}
                                 className="ml-4 px-3 py-2 rounded-md text-sm font-medium bg-(--color-secondary) text-(--color-primary) hover:opacity-90 transition-colors"
                             >Cerrar sesión</button>
                         </div>

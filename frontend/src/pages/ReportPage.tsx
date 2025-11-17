@@ -1,39 +1,62 @@
 import type { ReportDetail } from "@/interfaces/api";
 import { findById } from "@/services/report/findById";
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { assignSelfReport } from "@/services/report/assignReport";
+import { useEffect, useState, useContext, useCallback } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { NotificationContext } from "@/context/context";
+import useAuth from "@/hooks/useAuth";
+import ProtectedComponent from "@/components/ProtectedComponent";
 
 export default function ReportPage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const notificationContext = useContext(NotificationContext);
 
     const [isLoading, setIsLoading] = useState(true);
     const [currentData, setCurrentData] = useState<ReportDetail | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isAssigning, setIsAssigning] = useState(false);
+    
+
+    const fetchReport = useCallback(async () => {
+        if (!id) return;
+        setIsLoading(true);
+        setError(null);
+        //refresh al final
+        try {
+            const reportData = await findById(id);
+            setCurrentData(reportData.report);
+        
+        } catch (error) {
+            console.error("Error fetching report:", error);
+            setError((error as Error)?.message ?? String(error));
+        } finally {
+            setIsLoading(false);
+        }
+    }, [id]);
 
     useEffect(() => {
-        let isActive = true;
-        const fetchReport = async () => {
-            if (!id) return;
-            setIsLoading(true);
-            setError(null);
-            try {
-                const reportData = await findById(id);
-                if (!isActive) return;
-                setCurrentData(reportData.report);
-            } catch (error) {
-                if (!isActive) return;
-                console.error("Error fetching report:", error);
-                setError((error as Error)?.message ?? String(error));
-            } finally {
-                if (isActive) setIsLoading(false);
-            }
-        };
         fetchReport();
-        return () => {
-            isActive = false;
-        };
-    }, [id]);
+    }, [fetchReport]);
+
+    const handleSelfAssign = async () => {
+        if (!id || !user?.id) return;
+        setIsAssigning(true);
+        try {
+            await assignSelfReport(id);
+            notificationContext?.showNotification({ message: "Te has asignado el reporte exitosamente", type: "success" });
+            await fetchReport();
+        } catch (error) {
+            console.error("Error self-assigning:", error);
+            notificationContext?.showNotification({ message: (error as Error).message || "Error al asignarte el reporte", type: "error" });
+        } finally {
+            setIsAssigning(false);
+        }
+        
+    };
+
+
 
     const getStatusColor = (estado: string) => {
         switch (estado) {
@@ -178,7 +201,24 @@ export default function ReportPage() {
                                     <dd className="text-gray-900">
                                         {currentData.assigned 
                                             ? `${currentData.assigned.first_name} ${currentData.assigned.last_name ?? ''}`
-                                            : 'Sin asignar'}
+                                            :
+                                            <>
+                                            <ProtectedComponent requiredRoles={[ 'authority']}>
+                                                <button
+                                                    onClick={handleSelfAssign}
+                                                    disabled={isAssigning}
+                                                    className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:bg-gray-400"
+                                                >
+                                                    {isAssigning ? 'Asignando...' : 'Asignarme este reporte'}
+                                            </button>
+                                            </ProtectedComponent>
+                                            <ProtectedComponent requiredRoles={['admin']}>
+                                                <Link to={`/report/${id}/assign`} className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:bg-gray-400">Asignar</Link>
+                                            </ProtectedComponent>
+                                            <ProtectedComponent requiredRoles={['student']}>
+                                                No asignado
+                                            </ProtectedComponent>
+                                            </>}
                                     </dd>
                                     {currentData.assigned?.email && (
                                         <dd className="text-sm text-gray-600">{currentData.assigned.email}</dd>
@@ -227,8 +267,11 @@ export default function ReportPage() {
                                 )}
                             </dl>
                         </div>
+
+
                     </div>
                 </div>
+
             </div>
         </div>
     );

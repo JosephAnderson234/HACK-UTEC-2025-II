@@ -39,7 +39,9 @@ def handler(event, context):
         # Validar JWT
         claims = validate_jwt(event)
         user_role = claims.get('role')
-        user_id = claims.get('sub')
+        user_id = claims.get('user_id') or claims.get('sub')  # Probar ambos campos
+        
+        print(f"User role: {user_role}, User ID: {user_id}")  # Debug
         
         # Solo admin y authority pueden ver listado de usuarios
         if user_role not in ['admin', 'authority']:
@@ -58,8 +60,10 @@ def handler(event, context):
         params = event.get('queryStringParameters') or {}
         page = int(params.get('page', 1))
         size = min(int(params.get('size', 20)), 100)  # Max 100
-        role_filter = params.get('role', '').lower()
-        term = params.get('term', '').lower()
+        role_filter = params.get('role', '').lower() if params.get('role') else ''
+        term = params.get('term', '').lower().strip() if params.get('term') else ''
+        
+        print(f"Query params - page: {page}, size: {size}, role: {role_filter}, term: {term}")  # Debug
         
         # Escanear tabla de usuarios
         scan_params = {
@@ -75,28 +79,45 @@ def handler(event, context):
         response = table_usuarios.scan(**scan_params)
         items = response.get('Items', [])
         
+        print(f"Total items after scan: {len(items)}")  # Debug
+        
         # Aplicar filtro de búsqueda si se especifica
         if term:
             items = [
                 user for user in items
-                if term in user.get('first_name', '').lower()
-                or term in user.get('last_name', '').lower()
-                or term in user.get('email', '').lower()
+                if (term in user.get('first_name', '').lower() or
+                    term in user.get('last_name', '').lower() or
+                    term in user.get('email', '').lower())
             ]
+            print(f"Items after term filter: {len(items)}")  # Debug
         
         # Si es authority, solo puede ver usuarios de su sector
         if user_role == 'authority':
-            # Obtener sector del authority
-            user_response = table_usuarios.get_item(Key={'id': user_id})
-            if 'Item' in user_response:
-                user_data = user_response['Item']
-                user_sector =    user_data.get('data_authority', {}).get('sector', '')
-                
-                # Filtrar solo usuarios del mismo sector (otros authority/admin del mismo sector)
-                items = [
-                    user for user in items
-                    if user.get('data_authority', {}).get('sector', '') == user_sector
-                ]
+            try:
+                print(f"Filtering by sector for authority: {user_id}")  # Debug
+                # Obtener sector del authority
+                user_response = table_usuarios.get_item(Key={'id': user_id})
+                if 'Item' in user_response:
+                    user_data = user_response['Item']
+                    user_sector = user_data.get('data_authority', {}).get('sector', '')
+                    print(f"Authority sector: {user_sector}")  # Debug
+                    
+                    # Filtrar solo usuarios del mismo sector (otros authority/admin del mismo sector)
+                    items = [
+                        user for user in items
+                        if user.get('data_authority', {}).get('sector', '') == user_sector
+                    ]
+                    print(f"Items after sector filter: {len(items)}")  # Debug
+                else:
+                    print(f"Authority user not found in database: {user_id}")  # Debug
+                    # Si no se encuentra el usuario authority, no mostrar nada
+                    items = []
+            except Exception as e:
+                print(f"Error filtering by sector: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                # En caso de error, no mostrar usuarios
+                items = []
         
         # Remover passwords de la respuesta
         users = []

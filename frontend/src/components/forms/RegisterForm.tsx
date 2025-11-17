@@ -17,30 +17,33 @@ export default function RegisterForm (){
         navigate(redirectTo);
     }
     return(
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full max-w-sm">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
             <div>
                 <img src={LogoUtec} alt="UTEC Logo" className="w-32 mx-auto mb-4 rounded-2xl" />
             </div>
-            <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-(--color-tertiary)">Nombres</label>
-                <input
-                    id="first_name"
-                    type="text"
-                    {...register("first_name")}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-(--color-secondary) focus:border-(--color-secondary)"
-                />
-                {errors.first_name && <p className="text-red-500 text-sm mt-1">{errors.first_name.message}</p>}
-            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="first_name" className="block text-sm font-medium text-(--color-tertiary)">Nombres</label>
+                    <input
+                        id="first_name"
+                        type="text"
+                        {...register("first_name")}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-(--color-secondary) focus:border-(--color-secondary)"
+                    />
+                    {errors.first_name && <p className="text-red-500 text-sm mt-1">{errors.first_name.message}</p>}
+                </div>
 
-            <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-(--color-tertiary)">Apellidos</label>
-                <input
-                    id="last_name"
-                    type="text"
-                    {...register("last_name")}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-(--color-secondary) focus:border-(--color-secondary)"
-                />
-                {errors.last_name && <p className="text-red-500 text-sm mt-1">{errors.last_name.message}</p>}
+                <div>
+                    <label htmlFor="last_name" className="block text-sm font-medium text-(--color-tertiary)">Apellidos</label>
+                    <input
+                        id="last_name"
+                        type="text"
+                        {...register("last_name")}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-(--color-secondary) focus:border-(--color-secondary)"
+                    />
+                    {errors.last_name && <p className="text-red-500 text-sm mt-1">{errors.last_name.message}</p>}
+                </div>
             </div>
 
             <div>
@@ -66,27 +69,30 @@ export default function RegisterForm (){
                 {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
             </div>
 
-            <div>
-                <label htmlFor="DNI" className="block text-sm font-medium text-(--color-tertiary)">DNI (opcional)</label>
-                <input
-                    id="DNI"
-                    type="text"
-                    {...register("DNI")}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-(--color-secondary) focus:border-(--color-secondary)"
-                />
-                {errors.DNI && <p className="text-red-500 text-sm mt-1">{errors.DNI.message}</p>}
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="DNI" className="block text-sm font-medium text-(--color-tertiary)">DNI (opcional)</label>
+                    <input
+                        id="DNI"
+                        type="text"
+                        {...register("DNI")}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-(--color-secondary) focus:border-(--color-secondary)"
+                    />
+                    {errors.DNI && <p className="text-red-500 text-sm mt-1">{errors.DNI.message}</p>}
+                </div>
 
-            <div>
-                <label htmlFor="cellphone" className="block text-sm font-medium text-(--color-tertiary)">Teléfono (opcional)</label>
-                <input
-                    id="cellphone"
-                    type="tel"
-                    {...register("cellphone")}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-(--color-secondary) focus:border-(--color-secondary)"
-                />
-                {errors.cellphone && <p className="text-red-500 text-sm mt-1">{errors.cellphone.message}</p>}
+                <div>
+                    <label htmlFor="cellphone" className="block text-sm font-medium text-(--color-tertiary)">Teléfono (opcional)</label>
+                    <input
+                        id="cellphone"
+                        type="tel"
+                        {...register("cellphone")}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-(--color-secondary) focus:border-(--color-secondary)"
+                    />
+                    {errors.cellphone && <p className="text-red-500 text-sm mt-1">{errors.cellphone.message}</p>}
+                </div>
             </div>
+            
             <button
                 type="submit"
                 disabled={isSubmitting}

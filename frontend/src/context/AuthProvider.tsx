@@ -5,8 +5,15 @@ import { login } from "@/services/auth";
 import { register } from "@/services/auth";
 import type { DataAuthority, DataStudent, UserResponse } from "@/interfaces/user";
 
-const handleLogout = (setter: (token: string | null) => void) => {
-    setter(null);
+const handleLogout = (
+    setToken: (token: string | null) => void,
+    setUser: (user: UserResponse & { data_student?: DataStudent } & { data_authority?: DataAuthority }) => void,
+    clearCaches?: () => void
+) => {
+    setToken(null);
+    // clear user by setting an empty typed object (store expects a UserResponse shape)
+    setUser({} as UserResponse & { data_student?: DataStudent } & { data_authority?: DataAuthority });
+    if (clearCaches) clearCaches();
 };
 
 
@@ -33,7 +40,7 @@ export default function AuthContextProvider({ children }: { children: React.Reac
             token,
             login: (credentials: AuthRequest) => handleLogin(credentials, setToken, setUser),
             register: (data: AuthRegisterRequest) => handleRegister(data, setToken, setUser),
-            logout: () => handleLogout(setToken),
+            logout: () => handleLogout(setToken, setUser),
             user
         }}>
             {children}

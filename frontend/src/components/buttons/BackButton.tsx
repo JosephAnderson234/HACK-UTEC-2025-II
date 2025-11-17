@@ -1,12 +1,19 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function BackButton (){
+export default function BackButton() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const isLoginOrRegister = location.pathname === '/login' || location.pathname === '/register';
+
     return (
         <button
             aria-label="Volver"
             onClick={() => navigate(-1)}
-            className="fixed top-24 left-4 z-50 inline-flex items-center gap-2 px-3 py-2 rounded-md border border-(--color-secondary) bg-transparent text-(--color-tertiary) shadow-sm hover:bg-(--color-secondary) hover:text-(--color-primary) transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-(--color-secondary)"
+            className={`fixed top-6 left-6 z-50 inline-flex items-center gap-2 px-3 py-2 rounded-md border shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 ${
+                isLoginOrRegister 
+                    ? 'border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 focus:ring-white/50' 
+                    : 'border-(--color-secondary) bg-transparent text-(--color-tertiary) hover:bg-(--color-secondary) hover:text-(--color-primary) focus:ring-(--color-secondary)'
+            }`}
         >
             {/* Icono flecha izquierda */}
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>

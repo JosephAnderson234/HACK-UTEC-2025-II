@@ -71,7 +71,7 @@ export default function NavBar() {
                     ) : (
                         // cuando no está loggeado mostramos un pequeño tagline centrado en pantallas md+
                         <div className="hidden md:flex justify-center w-full">
-                            <span className="text-sm text-(--color-primary) opacity-90">Accede para crear y gestionar reportes</span>
+                            <span className="text-sm text-(--color-primary) opacity-90"> </span>
                         </div>
                     )}
                 </nav>

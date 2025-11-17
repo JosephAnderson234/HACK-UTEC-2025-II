@@ -159,13 +159,6 @@ def handler(event, context):
                 'assigned_to': user_id
             }
         })
-            'report': {
-                'id_reporte': report_id,
-                'estado': new_status,
-                'updated_at': timestamp,
-                'assigned_to': user_id
-            }
-        })
     
     except Exception as e:
         print(f"Error in updateStatus handler: {e}")

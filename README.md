@@ -33,32 +33,10 @@ Incluye un backend serverless desplegable en AWS y un frontend moderno en React 
 
 ## 🏗️ Arquitectura General
 
-```mermaid
-flowchart LR
-    U[Usuario (web)] --> FE[Frontend React (Vite)]
-    FE -->|HTTP (REST)| APIGW[API Gateway HTTP]
-    FE -->|WebSocket| WSGW[API Gateway WebSocket]
 
-    APIGW --> L_auth[Lambda auth]
-    APIGW --> L_incident[Lambda incidents]
-    APIGW --> L_stats[Lambda stats/reporting]
-
-    L_auth --> DDB_users[(DynamoDB t_usuarios)]
-    L_incident --> DDB_reports[(DynamoDB t_reportes)]
-    L_incident --> DDB_places[(DynamoDB t_lugares)]
-
-    L_incident --> EB[EventBridge]
-    EB --> L_notify[Lambda sendNotify]
-
-    WSGW --> L_onConnect[Lambda onConnect]
-    WSGW --> L_onDisconnect[Lambda onDisconnect]
-    L_notify --> DDB_conns[(DynamoDB t_connections)]
-    L_notify --> WSGW
-
-    L_incident --> S3[S3 - archivos/imágenes relacionadas]
-```
-
-> Los nombres exactos de Lambdas, rutas y recursos se definen en `backend/serverless.yml`.
+<div align="center">
+  <img src="backend/docs/svg/arquitectura.svg" alt="Arquitectura" style="max-width:100%; height:auto;" />
+</div>
 
 ---
 

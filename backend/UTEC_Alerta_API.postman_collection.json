@@ -967,6 +967,173 @@
 				}
 			],
 			"description": "Endpoints compartidos por todos los roles (detalle de reporte, listado de lugares)"
+		},
+		{
+			"name": "📊 Airflow Analytics - Métricas ML",
+			"item": [
+				{
+					"name": "Get Airflow Analytics (Admin - Week)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/airflow/analytics?period=week",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"airflow",
+								"analytics"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "week",
+									"description": "today|week|month"
+								}
+							]
+						},
+						"description": "Dashboard completo de métricas de Apache Airflow ML (Admin ve todos los datos)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Airflow Analytics (Admin - Today)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/airflow/analytics?period=today",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"airflow",
+								"analytics"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "today"
+								}
+							]
+						},
+						"description": "Métricas de Airflow del día actual"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Airflow Analytics (Admin - Month)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/airflow/analytics?period=month",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"airflow",
+								"analytics"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "month"
+								}
+							]
+						},
+						"description": "Métricas de Airflow de los últimos 30 días"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Airflow Analytics (Admin - Filtered by Sector)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/airflow/analytics?period=week&sector=Mantenimiento",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"airflow",
+								"analytics"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "week"
+								},
+								{
+									"key": "sector",
+									"value": "Mantenimiento",
+									"description": "Admin puede filtrar por sector específico"
+								}
+							]
+						},
+						"description": "Admin puede ver métricas filtradas por sector específico"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Airflow Analytics (Authority - Own Sector)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authority_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reports/airflow/analytics?period=week",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"airflow",
+								"analytics"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "week"
+								}
+							]
+						},
+						"description": "Authority solo ve métricas de su sector asignado (filtro automático por seguridad)"
+					},
+					"response": []
+				}
+			],
+			"description": "Métricas del sistema de Machine Learning de Apache Airflow (procesamiento, clasificación, reclasificación de urgencias, notificaciones automáticas)"
 		}
 	],
 	"event": [

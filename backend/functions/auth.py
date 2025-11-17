@@ -10,6 +10,7 @@ from decimal import Decimal
 dynamodb = boto3.resource('dynamodb')
 ssm = boto3.client('ssm')
 events = boto3.client('events')
+sns = boto3.client('sns')
 
 # Cache para JWT_SECRET
 _jwt_secret_cache = None
@@ -151,6 +152,20 @@ def handle_register(body):
         
         # Guardar usuario
         table.put_item(Item=user_item)
+        
+        # Auto-suscribir al usuario al Topic SNS para recibir emails de bienvenida
+        try:
+            sns_topic_arn = os.environ.get('SNS_TOPIC_ARN')
+            if sns_topic_arn:
+                sns.subscribe(
+                    TopicArn=sns_topic_arn,
+                    Protocol='email',
+                    Endpoint=body['email']
+                )
+                print(f"User {body['email']} auto-subscribed to SNS topic")
+        except Exception as e:
+            # No fallar el registro si la suscripción falla
+            print(f"Warning: Failed to subscribe user to SNS: {str(e)}")
         
         # Publicar evento de registro para enviar email de bienvenida
         try:

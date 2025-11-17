@@ -2,7 +2,7 @@ import type { ReportDetail } from "@/interfaces/api";
 import { findById } from "@/services/report/findById";
 import { assignSelfReport } from "@/services/report/assignReport";
 import { useEffect, useState, useContext, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { NotificationContext } from "@/context/context";
 import useAuth from "@/hooks/useAuth";
 import ProtectedComponent from "@/components/ProtectedComponent";
@@ -213,9 +213,11 @@ export default function ReportPage() {
                                             </button>
                                             </ProtectedComponent>
                                             <ProtectedComponent requiredRoles={['admin']}>
-                                                <span>No asignado</span>
+                                                <Link to={`/report/${id}/assign`} className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:bg-gray-400">Asignar</Link>
                                             </ProtectedComponent>
-                                            
+                                            <ProtectedComponent requiredRoles={['student']}>
+                                                No asignado
+                                            </ProtectedComponent>
                                             </>}
                                     </dd>
                                     {currentData.assigned?.email && (

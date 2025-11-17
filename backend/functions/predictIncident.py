@@ -8,6 +8,15 @@ s3 = boto3.client("s3")
 
 _model_cache: Dict[str, Any] | None = None
 
+# Headers CORS comunes para todas las respuestas
+CORS_HEADERS = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",  # Cambiar por el origen específico en producción si se requiere
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+}
+
 
 def load_model_from_s3() -> Dict[str, Any]:
     """
@@ -84,6 +93,14 @@ def handler(event, context):
     - Siempre devuelve un JSON con detalle de error si algo falla.
     """
     try:
+        # Soporte explícito para preflight CORS por si el API Gateway no lo maneja automáticamente
+        if event.get("httpMethod") == "OPTIONS":
+            return {
+                "statusCode": 200,
+                "headers": CORS_HEADERS,
+                "body": ""
+            }
+
         print("[predictIncident] EVENT:", json.dumps(event))
 
         body = event.get("body", {})
@@ -98,7 +115,7 @@ def handler(event, context):
         if tower is None or tipo_lugar is None or hora is None:
             return {
                 "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
+                "headers": CORS_HEADERS,
                 "body": json.dumps({
                     "error": "tower, tipo_lugar y hora son obligatorios",
                     "ejemplo_body": {
@@ -138,7 +155,7 @@ def handler(event, context):
 
         return {
             "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
+            "headers": CORS_HEADERS,
             "body": json.dumps(response_body, ensure_ascii=False)
         }
 
@@ -147,7 +164,7 @@ def handler(event, context):
         print("[predictIncident] ERROR:", repr(e))
         return {
             "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
+            "headers": CORS_HEADERS,
             "body": json.dumps({
                 "error": "Error interno en la predicción",
                 "detalle": str(e)

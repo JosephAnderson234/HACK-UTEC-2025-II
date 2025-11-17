@@ -38,10 +38,30 @@ export const predictIncident = async (request: PredictIncidentRequest): Promise<
         body: JSON.stringify(request)
     });
 
-    if (!response.ok) {
+    // Leemos primero como texto para manejar respuestas no-JSON sin romper
+    const raw = await response.text();
 
-        throw new Error( 'Error al predecir incidente');
+    // Intentar parsear JSON si es posible
+    let data: any = null;
+    try {
+        data = raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        // No es JSON válido
+        // Log opcional para diagnóstico (se puede quitar si es muy ruidoso)
+        console.debug('[predictIncident] Respuesta no-JSON:', raw);
     }
 
-    return await response.json();
+    if (!response.ok) {
+        const msg = data?.error || data?.message || raw || 'Error al predecir incidente';
+        console.error('[predictIncident] Error HTTP:', response.status, msg);
+        throw new Error(msg);
+    }
+
+    if (!data) {
+        // 200 pero cuerpo vacío o no JSON: devolvemos un mensaje claro para la UI
+        console.error('[predictIncident] 200 OK pero sin JSON válido');
+        throw new Error('La respuesta del servidor no contiene datos válidos');
+    }
+
+    return data as PredictIncidentResponse;
 };

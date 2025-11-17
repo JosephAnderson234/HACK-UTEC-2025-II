@@ -39,10 +39,8 @@ export const predictIncident = async (request: PredictIncidentRequest): Promise<
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({
-            error: 'Error al predecir incidente'
-        }));
-        throw new Error(error.error || error.detalle || 'Error al predecir incidente');
+
+        throw new Error( 'Error al predecir incidente');
     }
 
     return await response.json();

@@ -25,6 +25,60 @@ type AdminStats = {
     performance: { avg_resolution_time_hours: number | null; resolution_rate: number };
 };
 
+type AirflowStats = {
+    period: string;
+    date_range: { from: string; to: string };
+    airflow_processing: {
+        total_reports: number;
+        processed_by_ml: number;
+        pending_classification: number;
+        processing_rate: number;
+        avg_processing_time_minutes: number;
+    };
+    ml_classification: {
+        avg_confidence_score: number;
+        confidence_distribution: {
+            high: number;
+            medium: number;
+            low: number;
+        };
+    };
+    urgency_reclassification: {
+        total_reclassified: number;
+        reclassification_rate: number;
+        changes: {
+            elevated: number;
+            reduced: number;
+            elevation_rate: number;
+        };
+        by_original_urgency: Record<string, number>;
+    };
+    urgency_comparison: {
+        original: { BAJA: number; MEDIA: number; ALTA: number };
+        classified: { BAJA: number; MEDIA: number; ALTA: number };
+        impact: string;
+    };
+    automated_notifications: {
+        total_sent: number;
+        notification_rate: number;
+        by_reason: {
+            high_urgency: number;
+            high_confidence: number;
+        };
+        avg_notification_time_minutes: number;
+    };
+    top_detected_keywords: Array<{
+        keyword: string;
+        count: number;
+        risk_level: string;
+    }>;
+    impact_metrics: {
+        reports_prioritized: number;
+        authorities_notified: number;
+        avg_response_improvement: string;
+    };
+};
+
 const URGENCY_COLORS = {
     BAJA: "#00BFFE",
     MEDIA: "#11C4FC", 
@@ -39,6 +93,8 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [stats, setStats] = useState<AdminStats | null>(null);
+    const [airflowStats, setAirflowStats] = useState<AirflowStats | null>(null);
+    const [loadingAirflow, setLoadingAirflow] = useState(false);
 
     const statsUrl = useMemo(() => {
         try {
@@ -84,6 +140,38 @@ export default function AdminDashboard() {
         run();
         return () => controller.abort();
     }, [token, statsUrl, period]);
+
+    // Fetch Airflow Analytics
+    useEffect(() => {
+        if (!token) return;
+        const controller = new AbortController();
+        const run = async () => {
+            setLoadingAirflow(true);
+            try {
+                const reportsUrl = loadEnv("REPORTS_URL");
+                const url = `${reportsUrl}/airflow/analytics?period=${period}`;
+                const res = await fetch(url, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    signal: controller.signal,
+                });
+                if (res.ok) {
+                    const data = (await res.json()) as AirflowStats;
+                    setAirflowStats(data);
+                }
+            } catch (e: unknown) {
+                if (e instanceof DOMException && e.name === "AbortError") return;
+                console.error("Error obteniendo métricas de Airflow:", e);
+            } finally {
+                setLoadingAirflow(false);
+            }
+        };
+        run();
+        return () => controller.abort();
+    }, [token, period]);
 
     return (
         <div className="space-y-6 pb-8">
@@ -210,6 +298,277 @@ export default function AdminDashboard() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Apache Airflow ML Analytics Section */}
+                    {airflowStats && (
+                        <div className="space-y-6">
+                            {/* Airflow Header */}
+                            <div className="relative overflow-hidden rounded-xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #3B82F6 100%)'}}>
+                                <div className="absolute inset-0 bg-black opacity-5"></div>
+                                <div className="relative z-10 flex items-center gap-3">
+                                    <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
+                                        <svg className="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold">Apache Airflow ML Analytics</h2>
+                                        <p className="text-white/90">Sistema de clasificación automática y análisis predictivo</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Airflow KPIs */}
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                                <Card className="border-0 text-white shadow-lg" style={{background: 'linear-gradient(to bottom right, #8B5CF6, #7C3AED)'}}>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium text-white/90">
+                                            Tasa de Procesamiento ML
+                                        </CardTitle>
+                                        <Zap className="h-5 w-5 text-white/80" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold">{airflowStats.airflow_processing.processing_rate}%</div>
+                                        <p className="text-xs text-white/70 mt-1">
+                                            {airflowStats.airflow_processing.processed_by_ml}/{airflowStats.airflow_processing.total_reports} procesados
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-0 text-white shadow-lg" style={{background: 'linear-gradient(to bottom right, #6366F1, #4F46E5)'}}>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium text-white/90">
+                                            Confianza Promedio
+                                        </CardTitle>
+                                        <Target className="h-5 w-5 text-white/80" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold">{(airflowStats.ml_classification.avg_confidence_score * 100).toFixed(0)}%</div>
+                                        <p className="text-xs text-white/70 mt-1">Score de clasificación ML</p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-0 text-white shadow-lg" style={{background: 'linear-gradient(to bottom right, #3B82F6, #2563EB)'}}>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium text-white/90">
+                                            Reclasificaciones
+                                        </CardTitle>
+                                        <TrendingUp className="h-5 w-5 text-white/80" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold">{airflowStats.urgency_reclassification.total_reclassified}</div>
+                                        <p className="text-xs text-white/70 mt-1">
+                                            {airflowStats.urgency_reclassification.reclassification_rate}% del total
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-0 text-white shadow-lg" style={{background: 'linear-gradient(to bottom right, #0EA5E9, #0284C7)'}}>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium text-white/90">
+                                            Notificaciones Auto
+                                        </CardTitle>
+                                        <AlertCircle className="h-5 w-5 text-white/80" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold">{airflowStats.automated_notifications.total_sent}</div>
+                                        <p className="text-xs text-white/70 mt-1">
+                                            {airflowStats.automated_notifications.notification_rate}% automatizadas
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Airflow Charts */}
+                            <div className="grid gap-6 lg:grid-cols-2">
+                                {/* Distribución de Confianza ML */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Distribución de Confianza ML</CardTitle>
+                                        <CardDescription>Precisión del modelo de clasificación</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <ChartContainer
+                                            config={{
+                                                high: { label: "Alta (≥70%)", color: "#10b981" },
+                                                medium: { label: "Media (40-69%)", color: "#f59e0b" },
+                                                low: { label: "Baja (<40%)", color: "#ef4444" },
+                                            }}
+                                            className="h-[300px]"
+                                        >
+                                            <BarChart
+                                                data={[
+                                                    { nivel: "Alta", cantidad: airflowStats.ml_classification.confidence_distribution.high, fill: "#10b981" },
+                                                    { nivel: "Media", cantidad: airflowStats.ml_classification.confidence_distribution.medium, fill: "#f59e0b" },
+                                                    { nivel: "Baja", cantidad: airflowStats.ml_classification.confidence_distribution.low, fill: "#ef4444" },
+                                                ]}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="nivel" />
+                                                <YAxis />
+                                                <ChartTooltip content={<ChartTooltipContent />} />
+                                                <Bar dataKey="cantidad" radius={[8, 8, 0, 0]}>
+                                                    <LabelList dataKey="cantidad" position="top" style={{ fontWeight: 'bold' }} />
+                                                </Bar>
+                                            </BarChart>
+                                        </ChartContainer>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Comparación de Urgencias: Original vs Clasificada */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Impacto de Reclasificación ML</CardTitle>
+                                        <CardDescription>{airflowStats.urgency_comparison.impact}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <ChartContainer
+                                            config={{
+                                                original: { label: "Original", color: "#94a3b8" },
+                                                clasificada: { label: "Clasificada ML", color: "#6366F1" },
+                                            }}
+                                            className="h-[300px]"
+                                        >
+                                            <BarChart
+                                                data={[
+                                                    { 
+                                                        urgencia: "BAJA", 
+                                                        original: airflowStats.urgency_comparison.original.BAJA,
+                                                        clasificada: airflowStats.urgency_comparison.classified.BAJA
+                                                    },
+                                                    { 
+                                                        urgencia: "MEDIA", 
+                                                        original: airflowStats.urgency_comparison.original.MEDIA,
+                                                        clasificada: airflowStats.urgency_comparison.classified.MEDIA
+                                                    },
+                                                    { 
+                                                        urgencia: "ALTA", 
+                                                        original: airflowStats.urgency_comparison.original.ALTA,
+                                                        clasificada: airflowStats.urgency_comparison.classified.ALTA
+                                                    },
+                                                ]}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="urgencia" />
+                                                <YAxis />
+                                                <ChartTooltip content={<ChartTooltipContent />} />
+                                                <Legend />
+                                                <Bar dataKey="original" fill="#94a3b8" name="Original" radius={[8, 8, 0, 0]} />
+                                                <Bar dataKey="clasificada" fill="#6366F1" name="Clasificada ML" radius={[8, 8, 0, 0]} />
+                                            </BarChart>
+                                        </ChartContainer>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Reclassification Details */}
+                            <div className="grid gap-6 lg:grid-cols-3">
+                                <Card className="border-2 border-green-200">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-green-700">
+                                            <TrendingUp className="h-5 w-5" />
+                                            Urgencias Elevadas
+                                        </CardTitle>
+                                        <CardDescription>Casos priorizados por ML</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-center">
+                                            <div className="text-5xl font-bold text-green-600">
+                                                {airflowStats.urgency_reclassification.changes.elevated}
+                                            </div>
+                                            <p className="text-sm text-gray-600 mt-2">
+                                                {airflowStats.urgency_reclassification.changes.elevation_rate.toFixed(1)}% de reclasificaciones
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-2 border-blue-200">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-blue-700">
+                                            <Target className="h-5 w-5" />
+                                            Urgencias Reducidas
+                                        </CardTitle>
+                                        <CardDescription>Optimización de recursos</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-center">
+                                            <div className="text-5xl font-bold text-blue-600">
+                                                {airflowStats.urgency_reclassification.changes.reduced}
+                                            </div>
+                                            <p className="text-sm text-gray-600 mt-2">
+                                                Reasignación eficiente de prioridad
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-2 border-purple-200">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-purple-700">
+                                            <Clock className="h-5 w-5" />
+                                            Tiempo de Procesamiento
+                                        </CardTitle>
+                                        <CardDescription>Velocidad del pipeline ML</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-center">
+                                            <div className="text-5xl font-bold text-purple-600">
+                                                {airflowStats.airflow_processing.avg_processing_time_minutes.toFixed(1)}
+                                            </div>
+                                            <p className="text-sm text-gray-600 mt-2">
+                                                minutos promedio de análisis
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Keywords Detection */}
+                            {airflowStats.top_detected_keywords.length > 0 && (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Palabras Clave Detectadas por ML</CardTitle>
+                                        <CardDescription>Patrones de riesgo identificados automáticamente</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                            {airflowStats.top_detected_keywords.map((kw, idx) => (
+                                                <div 
+                                                    key={idx}
+                                                    className="p-3 rounded-lg border-2 text-center"
+                                                    style={{
+                                                        borderColor: kw.risk_level === 'high' ? '#ef4444' : '#f59e0b',
+                                                        background: kw.risk_level === 'high' ? '#fef2f2' : '#fffbeb'
+                                                    }}
+                                                >
+                                                    <div className="text-sm font-semibold text-gray-700">{kw.keyword}</div>
+                                                    <div 
+                                                        className="text-2xl font-bold mt-1"
+                                                        style={{ color: kw.risk_level === 'high' ? '#dc2626' : '#d97706' }}
+                                                    >
+                                                        {kw.count}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        {kw.risk_level === 'high' ? '🔴 Alto Riesgo' : '🟡 Medio Riesgo'}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+                    )}
+
+                    {loadingAirflow && (
+                        <div className="flex items-center justify-center py-12 bg-purple-50 rounded-xl border-2 border-purple-200">
+                            <div className="text-center">
+                                <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent mb-3"></div>
+                                <p className="text-purple-700 font-semibold">Cargando métricas de Apache Airflow...</p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Performance Metrics - Destacados */}
                     <div className="grid gap-6 md:grid-cols-2">

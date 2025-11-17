@@ -23,3 +23,23 @@ export const assignReport = async (id_reporte: string, request: AssignReportRequ
     
     return await res.json();
 };
+
+
+export const assignSelfReport = async (id_reporte: string): Promise<AssignReportResponse> => {
+    const token = useToken.getState().token;
+    
+    const res = await fetch(`${API_URL}/${id_reporte}/take`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: 'Error assigning report' }));
+        throw new Error(error.message || 'Error assigning report');
+    }
+    
+    return await res.json();
+};

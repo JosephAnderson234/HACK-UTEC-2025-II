@@ -3,8 +3,8 @@ import useAuth from "@/hooks/useAuth";
 import { loadEnv } from "@/utils/loaderEnv";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, LabelList, Area, AreaChart } from "recharts";
-import { AlertCircle, CheckCircle2, Clock, TrendingUp, Users, Briefcase } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, LabelList, Area, AreaChart, Legend } from "recharts";
+import { AlertCircle, CheckCircle2, Clock, TrendingUp, Users, Briefcase, Target, Zap } from "lucide-react";
 
 type Period = "today" | "week" | "month" | "year";
 
@@ -29,16 +29,70 @@ type AuthorityStats = {
     };
 };
 
+type AirflowStats = {
+    period: string;
+    date_range: { from: string; to: string };
+    airflow_processing: {
+        total_reports: number;
+        processed_by_ml: number;
+        pending_classification: number;
+        processing_rate: number;
+        avg_processing_time_minutes: number;
+    };
+    ml_classification: {
+        avg_confidence_score: number;
+        confidence_distribution: {
+            high: number;
+            medium: number;
+            low: number;
+        };
+    };
+    urgency_reclassification: {
+        total_reclassified: number;
+        reclassification_rate: number;
+        changes: {
+            elevated: number;
+            reduced: number;
+            elevation_rate: number;
+        };
+        by_original_urgency: Record<string, number>;
+    };
+    urgency_comparison: {
+        original: { BAJA: number; MEDIA: number; ALTA: number };
+        classified: { BAJA: number; MEDIA: number; ALTA: number };
+        impact: string;
+    };
+    automated_notifications: {
+        total_sent: number;
+        notification_rate: number;
+        by_reason: {
+            high_urgency: number;
+            high_confidence: number;
+        };
+        avg_notification_time_minutes: number;
+    };
+    top_detected_keywords: Array<{
+        keyword: string;
+        count: number;
+        risk_level: string;
+    }>;
+    impact_metrics: {
+        reports_prioritized: number;
+        authorities_notified: number;
+        avg_response_improvement: string;
+    };
+};
+
 const URGENCY_COLORS = {
-    BAJA: "#10b981",
-    MEDIA: "#f59e0b", 
-    ALTA: "#ef4444"
+    BAJA: "#00BFFE",
+    MEDIA: "#11C4FC", 
+    ALTA: "#145C74"
 };
 
 const STATUS_COLORS = {
-    pendiente: "#a855f7",
-    atendiendo: "#3b82f6",
-    resuelto: "#10b981"
+    pendiente: "#11C4FC",
+    atendiendo: "#00BAF5",
+    resuelto: "#145C74"
 };
 
 export default function AutorityDashbaord() {
@@ -47,6 +101,8 @@ export default function AutorityDashbaord() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [stats, setStats] = useState<AuthorityStats | null>(null);
+    const [airflowStats, setAirflowStats] = useState<AirflowStats | null>(null);
+    const [loadingAirflow, setLoadingAirflow] = useState(false);
 
     const statsUrl = useMemo(() => {
         try {
@@ -92,6 +148,39 @@ export default function AutorityDashbaord() {
         run();
         return () => controller.abort();
     }, [token, statsUrl, period]);
+
+    // Fetch Airflow Analytics (filtrado por sector automáticamente en backend)
+    useEffect(() => {
+        if (!token) return;
+        const controller = new AbortController();
+        const run = async () => {
+            setLoadingAirflow(true);
+            try {
+                const reportsUrl = loadEnv("REPORTS_URL");
+                const url = new URL(`${reportsUrl}/airflow/analytics`);
+                url.searchParams.set("period", period);
+                const res = await fetch(url.toString(), {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    signal: controller.signal,
+                });
+                if (res.ok) {
+                    const data = (await res.json()) as AirflowStats;
+                    setAirflowStats(data);
+                }
+            } catch (e: unknown) {
+                if (e instanceof DOMException && e.name === "AbortError") return;
+                console.error("Error obteniendo métricas de Airflow:", e);
+            } finally {
+                setLoadingAirflow(false);
+            }
+        };
+        run();
+        return () => controller.abort();
+    }, [token, period]);
 
     return (
         <div className="space-y-6 pb-8">
@@ -331,6 +420,299 @@ export default function AutorityDashbaord() {
                                 </ChartContainer>
                             </CardContent>
                         </Card>
+                    </div>
+
+                    {/* Apache Airflow Analytics */}
+                    <div className="space-y-6">
+                        <div className="bg-gradient-to-r from-[#00BFFE] to-[#145C74] rounded-lg p-6 shadow-lg">
+                            <div className="flex items-center justify-between">
+                                <div className="text-white space-y-2">
+                                    <div className="flex items-center gap-3">
+                                        <Target className="w-8 h-8" />
+                                        <h2 className="text-2xl font-bold">Apache Airflow - Análisis de Clasificación ML</h2>
+                                    </div>
+                                    <p className="text-sm opacity-90">Datos procesados de tu sector</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {loadingAirflow ? (
+                            <Card>
+                                <CardContent className="p-8 text-center">
+                                    <div className="animate-pulse">Cargando métricas de Airflow...</div>
+                                </CardContent>
+                            </Card>
+                        ) : !airflowStats ? (
+                            <Card>
+                                <CardContent className="p-8 text-center text-gray-500">
+                                    <p>No hay datos de Airflow disponibles para el período seleccionado</p>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <>
+                                {/* Explicación del Sistema ML */}
+                                <Card className="border-[#00BFFE] shadow-md">
+                                    <CardHeader className="bg-gradient-to-r from-[#00BFFE]/10 to-[#145C74]/10">
+                                        <CardTitle className="flex items-center gap-2 text-[#145C74]">
+                                            <Target className="w-5 h-5" />
+                                            ¿Cómo funciona el sistema de clasificación automática?
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-6 space-y-4">
+                                        <div className="space-y-3 text-sm text-gray-700">
+                                            <p>
+                                                <strong className="text-[#145C74]">Apache Airflow</strong> ejecuta un DAG cada 5 minutos que analiza reportes pendientes usando Machine Learning heurístico:
+                                            </p>
+                                            <div className="pl-4 border-l-4 border-[#00BFFE] space-y-2">
+                                                <p><strong>1. Detección de palabras clave:</strong> "robo", "violencia", "fuego" aumentan prioridad en +30%, "fuga", "agua", "daño" en +15%</p>
+                                                <p><strong>2. Análisis de ubicación:</strong> Tipos de lugares críticos (baños, estacionamientos) suman +10-15%</p>
+                                                <p><strong>3. Urgencia original:</strong> La clasificación inicial del usuario aporta +0-40% al score</p>
+                                                <p><strong>4. Score final:</strong> Se calcula un puntaje de 0 a 1 que determina si se reclasifica a ALTA, MEDIA o BAJA</p>
+                                            </div>
+                                            <p className="text-[#145C74] font-medium">
+                                                El sistema envía notificaciones automáticas solo para reportes elevados a urgencia ALTA
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* KPIs Principales */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <Card className="border-[#00BFFE] shadow-md hover:shadow-lg transition-shadow">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-sm font-medium text-gray-600">Tasa de Procesamiento</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-3xl font-bold text-[#145C74]">
+                                                {airflowStats.airflow_processing.processing_rate.toFixed(1)}%
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2">
+                                                {airflowStats.airflow_processing.processed_by_ml} de {airflowStats.airflow_processing.total_reports} reportes procesados
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="border-[#00BFFE] shadow-md hover:shadow-lg transition-shadow">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-sm font-medium text-gray-600">Confianza Promedio</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-3xl font-bold text-[#145C74]">
+                                                {(airflowStats.ml_classification.avg_confidence_score * 100).toFixed(1)}%
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2">
+                                                Score ML del clasificador
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="border-[#00BFFE] shadow-md hover:shadow-lg transition-shadow">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-sm font-medium text-gray-600">Reclasificaciones</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-3xl font-bold text-[#145C74]">
+                                                {airflowStats.urgency_reclassification.total_reclassified}
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2">
+                                                {airflowStats.urgency_reclassification.reclassification_rate.toFixed(1)}% del total procesado
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="border-[#00BFFE] shadow-md hover:shadow-lg transition-shadow">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-sm font-medium text-gray-600">Notificaciones Automáticas</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-3xl font-bold text-[#145C74]">
+                                                {airflowStats.automated_notifications.total_sent}
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2">
+                                                {airflowStats.automated_notifications.notification_rate.toFixed(1)}% de reportes elevados
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Gráficos de Análisis */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <Card className="border-[#00BFFE] shadow-md">
+                                        <CardHeader>
+                                            <CardTitle className="text-[#145C74]">Distribución de Confianza</CardTitle>
+                                            <CardDescription>Rangos de scores del clasificador ML</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <ChartContainer
+                                                config={{
+                                                    cantidad: {
+                                                        label: "Reportes",
+                                                        color: "#00BFFE",
+                                                    },
+                                                }}
+                                                className="h-[300px]"
+                                            >
+                                                <BarChart data={[
+                                                    { range: "Alta (70-100%)", count: airflowStats.ml_classification.confidence_distribution.high },
+                                                    { range: "Media (40-70%)", count: airflowStats.ml_classification.confidence_distribution.medium },
+                                                    { range: "Baja (0-40%)", count: airflowStats.ml_classification.confidence_distribution.low },
+                                                ]}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="range" />
+                                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                                    <Bar dataKey="count" fill="#00BFFE" radius={[8, 8, 0, 0]} />
+                                                </BarChart>
+                                            </ChartContainer>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="border-[#00BFFE] shadow-md">
+                                        <CardHeader>
+                                            <CardTitle className="text-[#145C74]">Comparación de Urgencias</CardTitle>
+                                            <CardDescription>Original vs Clasificación ML</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <ChartContainer
+                                                config={{
+                                                    original: {
+                                                        label: "Original",
+                                                        color: "#145C74",
+                                                    },
+                                                    clasificada: {
+                                                        label: "ML",
+                                                        color: "#00BFFE",
+                                                    },
+                                                }}
+                                                className="h-[300px]"
+                                            >
+                                                <BarChart data={[
+                                                    { urgencia: "BAJA", original: airflowStats.urgency_comparison.original.BAJA, clasificada: airflowStats.urgency_comparison.classified.BAJA },
+                                                    { urgencia: "MEDIA", original: airflowStats.urgency_comparison.original.MEDIA, clasificada: airflowStats.urgency_comparison.classified.MEDIA },
+                                                    { urgencia: "ALTA", original: airflowStats.urgency_comparison.original.ALTA, clasificada: airflowStats.urgency_comparison.classified.ALTA },
+                                                ]}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="urgencia" />
+                                                    <Legend />
+                                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                                    <Bar dataKey="original" fill="#145C74" radius={[8, 8, 0, 0]} />
+                                                    <Bar dataKey="clasificada" fill="#00BFFE" radius={[8, 8, 0, 0]} />
+                                                </BarChart>
+                                            </ChartContainer>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Detalles de Reclasificación */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <Card className="border-[#00BFFE] shadow-md">
+                                        <CardHeader>
+                                            <CardTitle className="text-[#145C74] flex items-center gap-2">
+                                                <Zap className="w-5 h-5 text-[#00BFFE]" />
+                                                Urgencias Elevadas
+                                            </CardTitle>
+                                            <CardDescription>Reportes aumentados de prioridad</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <p className="text-sm text-gray-600">Total Elevadas</p>
+                                                    <p className="text-2xl font-bold text-[#145C74]">
+                                                        {airflowStats.urgency_reclassification.changes.elevated}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500 mt-1">
+                                                        {airflowStats.urgency_reclassification.changes.elevation_rate.toFixed(1)}% del total
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="border-[#00BFFE] shadow-md">
+                                        <CardHeader>
+                                            <CardTitle className="text-[#145C74] flex items-center gap-2">
+                                                <Target className="w-5 h-5 text-[#00BFFE]" />
+                                                Urgencias Reducidas
+                                            </CardTitle>
+                                            <CardDescription>Reportes disminuidos de prioridad</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <p className="text-sm text-gray-600">Total Reducidas</p>
+                                                    <p className="text-2xl font-bold text-[#145C74]">
+                                                        {airflowStats.urgency_reclassification.changes.reduced}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500 mt-1">
+                                                        {((airflowStats.urgency_reclassification.changes.reduced / airflowStats.urgency_reclassification.total_reclassified) * 100).toFixed(1)}% del total
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="border-[#00BFFE] shadow-md">
+                                        <CardHeader>
+                                            <CardTitle className="text-[#145C74]">Tiempo de Procesamiento</CardTitle>
+                                            <CardDescription>Duración del análisis ML</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <p className="text-sm text-gray-600">Promedio</p>
+                                                    <p className="text-2xl font-bold text-[#145C74]">
+                                                        {airflowStats.airflow_processing.avg_processing_time_minutes.toFixed(1)} min
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-gray-600">Total procesado</p>
+                                                    <p className="text-xl font-semibold text-[#145C74]">
+                                                        {airflowStats.airflow_processing.processed_by_ml} reportes
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Keywords Detection */}
+                                {airflowStats.top_detected_keywords.length > 0 && (
+                                    <Card className="border-[#00BFFE] shadow-md">
+                                        <CardHeader>
+                                            <CardTitle className="text-[#145C74]">Palabras Clave Detectadas</CardTitle>
+                                            <CardDescription>Keywords más frecuentes en el período</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {airflowStats.top_detected_keywords.map((kw, idx) => (
+                                                    <div key={idx} className="border border-[#00BFFE] rounded-lg p-4 hover:shadow-md transition-shadow">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <span className="font-semibold text-[#145C74] capitalize">{kw.keyword}</span>
+                                                            <span
+                                                                className={`text-xs px-2 py-1 rounded-full ${
+                                                                    kw.risk_level === "high"
+                                                                        ? "bg-[#00BFFE] text-white"
+                                                                        : kw.risk_level === "medium"
+                                                                        ? "bg-[#11C4FC] text-white"
+                                                                        : "bg-[#145C74] text-white"
+                                                                }`}
+                                                            >
+                                                                {kw.risk_level === "high" ? "Riesgo Alto" : kw.risk_level === "medium" ? "Riesgo Medio" : "Riesgo Bajo"}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-end">
+                                                            <span className="text-2xl font-bold text-[#145C74]">{kw.count}</span>
+                                                            <span className="text-sm text-gray-500">
+                                                                {kw.risk_level === "high" ? "+30%" : kw.risk_level === "medium" ? "+15%" : "+5%"} score
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </>
+                        )}
                     </div>
 
                     {/* Mis Asignaciones */}

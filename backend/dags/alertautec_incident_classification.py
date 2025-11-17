@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from airflow.decorators import dag, task
+from decimal import Decimal
 import boto3
 from boto3.dynamodb.conditions import Attr
 import json
-from decimal import Decimal
 
 AWS_REGION = "us-east-1"
 DYNAMO_TABLE = "t_reportes"
@@ -103,13 +103,18 @@ def incident_classification_and_notifications():
                 "classification_score = :score, "
                 "updated_at = :updated_at"
             )
-            
+
+            # Convertir float → Decimal (requisito de DynamoDB)
+            score = inc.get("classification_score", 0.0)
+            if isinstance(score, float):
+                score = Decimal(str(score))
+
             expr_values = {
-                ":urgencia_original": inc.get("urgencia_original"),
-                ":urgencia_clasificada": inc.get("urgencia_clasificada"),
-                ":clasificacion_auto": True,
-                ":score": inc.get("classification_score"),
-                ":updated_at": datetime.utcnow().isoformat(),
+               ":urgencia_original": inc.get("urgencia_original"),
+               ":urgencia_clasificada": inc.get("urgencia_clasificada"),
+               ":clasificacion_auto": True,
+               ":score": score,
+               ":updated_at": datetime.utcnow().isoformat(),
             }
 
             try:
@@ -120,8 +125,9 @@ def incident_classification_and_notifications():
                 )
             except Exception as e:
                 print(f"Error updating incident {inc['id_reporte']}: {str(e)}")
-        
+
         return incidents
+
 
     @task()
     def notify_responsibles(incidents):

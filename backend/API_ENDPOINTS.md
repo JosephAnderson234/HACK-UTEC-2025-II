@@ -841,6 +841,107 @@ Las notificaciones se envían vía WebSocket a:
 
 ---
 
+## 📊 Apache Airflow Analytics
+
+### `GET /reports/airflow/analytics`
+**Descripción:** Dashboard de métricas de Apache Airflow ML  
+**Acceso:** admin, authority (filtrado por sector)  
+**Query Parameters:**
+- `period`: today|week|month (opcional, default: week)
+- `sector`: Filtro por sector (opcional para admin, ignorado para authority)
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "period": "week",
+  "date_range": {
+    "from": "2025-11-09T00:00:00Z",
+    "to": "2025-11-16T12:00:00Z"
+  },
+  "airflow_processing": {
+    "total_reports": 150,
+    "processed_by_ml": 145,
+    "pending_classification": 5,
+    "processing_rate": 96.7,
+    "avg_processing_time_minutes": 3.2
+  },
+  "ml_classification": {
+    "avg_confidence_score": 0.68,
+    "confidence_distribution": {
+      "high": 82,
+      "medium": 51,
+      "low": 12
+    }
+  },
+  "urgency_reclassification": {
+    "total_reclassified": 47,
+    "reclassification_rate": 32.4,
+    "changes": {
+      "elevated": 35,
+      "reduced": 12,
+      "elevation_rate": 74.5
+    },
+    "by_original_urgency": {
+      "BAJA_to_MEDIA": 15,
+      "BAJA_to_ALTA": 8,
+      "MEDIA_to_ALTA": 12,
+      "MEDIA_to_BAJA": 7,
+      "ALTA_to_MEDIA": 5
+    }
+  },
+  "urgency_comparison": {
+    "original": {
+      "BAJA": 60,
+      "MEDIA": 55,
+      "ALTA": 30
+    },
+    "classified": {
+      "BAJA": 52,
+      "MEDIA": 58,
+      "ALTA": 35
+    },
+    "impact": "+16% más urgencias ALTA detectadas por ML"
+  },
+  "automated_notifications": {
+    "total_sent": 38,
+    "notification_rate": 26.2,
+    "by_reason": {
+      "high_urgency": 35,
+      "high_confidence": 3
+    },
+    "avg_notification_time_minutes": 4.1
+  },
+  "top_detected_keywords": [
+    {
+      "keyword": "robo",
+      "count": 15,
+      "risk_level": "high"
+    },
+    {
+      "keyword": "fuga",
+      "count": 12,
+      "risk_level": "medium"
+    }
+  ],
+  "impact_metrics": {
+    "reports_prioritized": 35,
+    "authorities_notified": 8,
+    "avg_response_improvement": "23%"
+  }
+}
+```
+
+**Seguridad:**
+- Authority: Solo ve datos de su sector asignado
+- Admin: Ve todos los datos (puede filtrar por sector opcionalmente)
+
+---
+
 ## 📝 Códigos de Estado HTTP
 
 | Código | Significado |
@@ -878,8 +979,10 @@ Las notificaciones se envían vía WebSocket a:
 | GET /dashboard/public-stats | ✅ | ✅ | ✅ |
 | GET /dashboard/my-sector-stats | ❌ | ✅ | ❌ |
 | GET /dashboard/admin-stats | ❌ | ❌ | ✅ |
+| GET /reports/airflow/analytics | ❌ | ✅* | ✅ |
 
-*Estudiantes solo pueden ver sus propios reportes
+*Estudiantes solo pueden ver sus propios reportes  
+**Autoridades solo ven métricas de su sector asignado
 
 ---
 
